@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desktop - 1 | Головна сторінка</title>
+    <style>
+        body {
+            background-color: #242424;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .desktop-container {
+            width: 320px;
+            height: 540px;
+            background-color: #43513b;
+            margin: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .header {
+            background-color: #2a3328;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .nav-bar {
+            background-color: #ffffff;
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .nav-bar a {
+            color: #2a3328;
+            text-decoration: none;
+            padding: 5px 8px;
+            font-size: 14px;
+        }
+        .nav-bar .active {
+            background-color: #cccccc;
+        }
+        .header-line {
+            background-color: #ffffff;
+            color: #2a3328;
+            padding: 5px 10px;
+            margin-top: -5px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .content {
+            padding: 20px 10px;
+            color: #ffffff;
+            font-size: 14px;
+            flex-grow: 1;
+        }
+        .footer {
+            background-color: #2a3328;
+            color: #ffffff;
+            padding: 10px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .footer-line {
+            color: #ffffff;
+            padding: 5px 10px;
+            margin-bottom: -5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="desktop-container">
+    <div class="header">Desktop - 1</div>
+    <div class="nav-bar">
+        <a href="desktop-1-home.html" class="active">Головна сторінка</a>
+        <a href="desktop-2-history.html">Історія гри</a>
+        <a href="desktop-3-description.html">Описання гри</a>
+        <a href="#">Гра</a>
+    </div>
+    <div class="header-line">Zomdie</div>
+    
+    <div class="content">
+        <p>Це головна сторінка. Тут буде розміщено основну інформацію про гру.</p>
+    </div>
+    
+    <div class="footer-line">Контент</div>
+    <div class="footer">
+        zomdieGame@gmail.com
+    </div>
+</div>
+
+</body>
+</html>
