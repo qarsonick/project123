@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desktop - 3 | Описання гри</title>
+    <title>Описання гри</title>
+    <link rel="stylesheet" href="about.css">
     <style>
         body {
             background-color: #242424;
@@ -13,6 +15,7 @@
             display: flex;
             justify-content: center;
         }
+
         .desktop-container {
             width: 320px;
             height: 540px;
@@ -23,6 +26,7 @@
             flex-direction: column;
             justify-content: space-between;
         }
+
         .header {
             background-color: #2a3328;
             color: white;
@@ -30,21 +34,25 @@
             font-size: 16px;
             font-weight: bold;
         }
+
         .nav-bar {
             background-color: #ffffff;
             padding: 5px 10px;
             display: flex;
             justify-content: space-around;
         }
+
         .nav-bar a {
             color: #2a3328;
             text-decoration: none;
             padding: 5px 8px;
             font-size: 14px;
         }
+
         .nav-bar .active {
             background-color: #cccccc;
         }
+
         .header-line {
             background-color: #ffffff;
             color: #2a3328;
@@ -53,12 +61,14 @@
             text-align: center;
             font-size: 18px;
         }
+
         .content {
             padding: 20px 10px;
             color: #ffffff;
             font-size: 14px;
             flex-grow: 1;
         }
+
         .footer {
             background-color: #2a3328;
             color: #ffffff;
@@ -66,6 +76,7 @@
             font-size: 12px;
             text-align: center;
         }
+
         .footer-line {
             color: #ffffff;
             padding: 5px 10px;
@@ -74,27 +85,56 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="desktop-container">
-    <div class="header">Desktop - 3</div>
-    <div class="nav-bar">
-        <a href="index.html">Головна сторінка</a>
-        <a href="history.html">Історія гри</a>
-        <a href="about.html" class="active">Описання гри</a>
-        <a href="game.html">Гра</a>
-    </div>
-    <div class="header-line">Zomdie</div>
-    
-    <div class="content">
-        <p>У цій грі тебе чекає справжній зомбі-апокаліпсис! Головний герой — Ванечкин, звичайний хлопець, який опинився серед зараженого лісу, де кожен крок може стати останнім. Озброївшись знайденими інструментами, він має вижити серед натовпів голодних зомбі.</p>
-    </div>
-    
-    <div class="footer-line">Контакти</div>
-    <div class="footer">
-        zomdieGame@gmail.com
-    </div>
-</div>
+    <div class="desktop-container">
+        <div class="nav-bar">
+            <a href="index.html">Головна сторінка</a>
+            <a href="history.html">Історія гри</a>
+            <a href="about.html" class="active">Описання гри</a>
+            <a href="game.html">Гра</a>
+        </div>
+        <div class="header-line">Zomdie</div>
 
+        <div class="content">
+            
+        </div>
+        <div class="card-grid content">
+
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-inner">
+                    <div class="card-face card-front one">
+                        <div>
+                            <h2>History</h2>
+                            <p>Натисни на цю карту і тобі відкриється історія про цю гру</p>
+                        </div>
+                        <p></p>
+                    </div>
+                    <div class="card-face card-back">
+                        <div>
+                            <h3>Zomdie</h3>
+                            <ul class="features">
+                                <li>У цій грі тебе чекає справжній зомбі-апокаліпсис! Головний герой — Ванечкин, звичайний хлопець, який
+                опинився серед зараженого лісу, де кожен крок може стати останнім. Озброївшись знайденими інструментами,
+                він має вижити серед натовпів голодних зомбі.</li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+
+        </div>
+        <div class="footer-line">Контакти</div>
+        <div class="footer">
+            zomdieGame@gmail.com
+        </div>
+    </div>
+    <script src="about.js"></script>
 </body>
+
 </html>
