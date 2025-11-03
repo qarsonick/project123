@@ -8,7 +8,7 @@ body {
 }
 
 .desktop-container {
-    width: 320px;
+    width: 100%;
     
     background-color: #43513b;
     margin: 20px;
