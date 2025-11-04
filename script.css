@@ -1,14 +1,86 @@
+/* Универсальный сброс и адаптивное масштабирование */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-body {
-    background: url('img/grass.jpg') center/cover no-repeat;
+html, body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 
+/* Фон подгоняется под экран */
+body {
+    background: url('img/grass.jpg') center/cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Основной контейнер */
+.desktop-container {
+    width: min(95vw, 420px); /* адаптивная ширина */
+    height: 90vh;           /* высота — 90% окна */
+    background-color: #43513b;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* Навигация */
+.nav-bar {
+    background-color: #ffffff;
+    padding: 0.5em;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.nav-bar a {
+    color: #2a3328;
+    text-decoration: none;
+    padding: 0.4em 0.6em;
+    font-size: clamp(12px, 2vw, 16px);
+}
+
+.nav-bar .active {
+    background-color: #cccccc;
+    border-radius: 5px;
+}
+
+/* Верхняя и нижняя полосы одинаковой высоты */
+.header-line,
+.footer-line {
+    height: 8vh;
+    line-height: 8vh;
+    text-align: center;
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: bold;
+}
+
+.header-line {
+    background-color: #ffffff;
+    color: #2a3328;
+}
+
+.footer-line {
+    background-color: #2a3328;
+    color: #ffffff;
+}
+
+/* Основное игровое окно */
+.game-wrapper {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Canvas — адаптивный */
 .canvas {
     width: 100%;
     height: 100%;
@@ -18,28 +90,44 @@ body {
     display: none;
 }
 
+/* Очки */
 .score {
     position: absolute;
+    top: 1.5vh;
+    left: 1.5vw;
     color: white;
-    padding: 20px;
-    user-select: none;
-    z-index: 1;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 20px;
+    font-size: clamp(14px, 2vw, 20px);
+    user-select: none;
+    z-index: 2;
 }
 
+/* Статус (жизни, патроны) */
+.status-bar {
+    position: absolute;
+    top: 5vh;
+    left: 1.5vw;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(12px, 1.8vw, 18px);
+    z-index: 2;
+}
+
+/* Экран результата */
 .result {
-    width: 60%;
-    position: fixed;
+    width: 80%;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: Arial, Helvetica, sans-serif;
+    display: none;
 }
 
 .result .content {
     background-color: white;
-    padding: 30px;
+    padding: 2em;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -47,43 +135,45 @@ body {
 }
 
 .content h2 {
-    font-size: 50px;
+    font-size: clamp(28px, 6vw, 50px);
     font-weight: 700;
 }
 
 .content p {
     color: #777;
-    font-size: 24px;
-    margin: 20px 0;
+    font-size: clamp(16px, 3vw, 24px);
+    margin: 1em 0;
 }
 
 .content .btn {
     width: 80%;
 }
 
-.content .btn button {
+.content .btn button,
+.start-game-btn {
     display: inline-block;
     width: 100%;
-    padding: 10px;
+    padding: 0.8em;
     border-radius: 30px;
     background-color: rgb(0, 119, 255);
     color: white;
-    font-size: 30px;
+    font-size: clamp(16px, 3vw, 30px);
     border: none;
     outline: none;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-.status-bar {
-    position: absolute;
-    top: 10px;
-    left: 20px;
-    z-index: 1;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 18px;
+.content .btn button:hover,
+.start-game-btn:hover {
+    background-color: rgb(0, 90, 190);
 }
 
-.ammo, .lives {
-    margin-bottom: 5px;
+/* Нижний футер */
+.footer {
+    background-color: #2a3328;
+    color: #ffffff;
+    padding: 0.8em;
+    font-size: clamp(10px, 2vw, 14px);
+    text-align: center;
 }
