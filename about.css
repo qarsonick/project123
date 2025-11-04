@@ -91,10 +91,12 @@ body {
     box-shadow: 0 0 12px #056438,
       0 0 25px #056438 inset;
   }
+
   50% {
     box-shadow: 0 0 22px #056438,
       0 0 35px #056438 inset;
   }
+
   100% {
     box-shadow: 0 0 12px #056438,
       0 0 25px #056438 inset;
@@ -120,18 +122,21 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
 .two {
   background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfT7ZgE_K4n5H01aMN7LIcqgoD_k8LyI_olQ&s");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
+
 .three {
   background: url("https://iili.io/KSTNLQ4.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
+
 .four {
   background: url("https://iili.io/KST8L1R.png");
   background-position: center;
@@ -212,19 +217,101 @@ ul.features li::before {
   body {
     padding: 20px;
   }
+
   .card-inner {
     min-height: 150px;
   }
+
   .card-face {
     padding: 18px;
   }
+
   .card-front h2 {
     font-size: 1.3rem;
   }
+
   .card-back h3 {
     font-size: 1.2rem;
   }
+
   ul.features li {
     font-size: 0.9rem;
   }
+}
+
+
+body {
+  background-color: #242424;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.desktop-container {
+  width: 320px;
+  background-color: #43513b;
+  margin: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.header {
+  background-color: #2a3328;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.nav-bar {
+  background-color: #ffffff;
+  padding: 5px 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.nav-bar a {
+  color: #2a3328;
+  text-decoration: none;
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+.nav-bar .active {
+  background-color: #cccccc;
+}
+
+.header-line {
+  background-color: #ffffff;
+  color: #2a3328;
+  padding: 5px 10px;
+  margin-top: -5px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.content {
+  padding: 20px 10px;
+  color: #ffffff;
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+.footer {
+  background-color: #2a3328;
+  color: #ffffff;
+  padding: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer-line {
+  color: #ffffff;
+  padding: 5px 10px;
+  margin-bottom: -5px;
+  text-align: center;
 }
