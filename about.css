@@ -24,13 +24,13 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 40px;
+  padding: 4vw;
 }
 
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 30px;
+  gap: 3vw;
   width: 100%;
   max-width: 1200px;
 }
@@ -45,7 +45,7 @@ body {
 .card-inner {
   position: relative;
   width: 100%;
-  min-height: 360px;
+  min-height: clamp(280px, 45vw, 400px);
   transform-style: preserve-3d;
   border-radius: var(--radius);
   transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
@@ -61,7 +61,7 @@ body {
   border-radius: var(--radius);
   background: var(--card-bg);
   box-shadow: var(--shadow);
-  padding: 24px;
+  padding: 2vw;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -75,8 +75,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  box-shadow: 0 0 12px #056438,
-    0 0 25px #056438 inset;
+  box-shadow: 0 0 12px #056438, 0 0 25px #056438 inset;
   opacity: 0;
   transition: opacity 0.4s;
 }
@@ -89,28 +88,25 @@ body {
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 12px #056438,
-      0 0 25px #056438 inset;
+    box-shadow: 0 0 12px #056438, 0 0 25px #056438 inset;
   }
   50% {
-    box-shadow: 0 0 22px #056438,
-      0 0 35px #056438 inset;
+    box-shadow: 0 0 22px #056438, 0 0 35px #056438 inset;
   }
   100% {
-    box-shadow: 0 0 12px #056438,
-      0 0 25px #056438 inset;
+    box-shadow: 0 0 12px #056438, 0 0 25px #056438 inset;
   }
 }
 
 .card-front h2 {
   font-family: "Orbitron", sans-serif;
-  font-size: 1.6rem;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
   color: var(--accent);
   margin-bottom: 0.5rem;
 }
 
 .card-front p {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
   color: var(--text-dim);
   line-height: 1.5;
 }
@@ -131,7 +127,7 @@ body {
 
 .card-back h3 {
   font-family: "Orbitron", sans-serif;
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
   color: var(--accent);
   margin-bottom: 1rem;
 }
@@ -147,7 +143,7 @@ ul.features li {
   padding-left: 1.4rem;
   position: relative;
   color: var(--text-dim);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.3vw, 0.95rem);
 }
 
 ul.features li::before {
@@ -161,16 +157,18 @@ ul.features li::before {
   display: flex;
   gap: 12px;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .cta-buttons a {
   flex: 1;
   text-align: center;
   text-decoration: none;
-  padding: 10px 14px;
+  padding: 0.8em 1em;
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.3s;
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
 }
 
 .cta-buttons a.primary {
@@ -193,21 +191,12 @@ ul.features li::before {
 
 @media (max-width: 768px) {
   body {
-    padding: 20px;
+    padding: 6vw;
   }
-  .card-inner {
-    min-height: 300px;
+  .card-grid {
+    gap: 5vw;
   }
-  .card-face {
-    padding: 18px;
-  }
-  .card-front h2 {
-    font-size: 1.3rem;
-  }
-  .card-back h3 {
-    font-size: 1.2rem;
-  }
-  ul.features li {
-    font-size: 0.9rem;
+  .cta-buttons {
+    flex-direction: column;
   }
 }
