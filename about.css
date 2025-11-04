@@ -7,7 +7,6 @@
   --text: #fafbfd;
   --text-dim: #c6c7cc;
   --radius: 20px;
-  --shadow: 0 10px 30px #056438;
 }
 
 * {
@@ -60,7 +59,6 @@ body {
   inset: 0;
   border-radius: var(--radius);
   background: var(--card-bg);
-  box-shadow: var(--shadow);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -75,8 +73,6 @@ body {
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  box-shadow: 0 0 12px #056438,
-    0 0 25px #056438 inset;
   opacity: 0;
   transition: opacity 0.4s;
 }
@@ -88,18 +84,9 @@ body {
 }
 
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 12px #056438,
-      0 0 25px #056438 inset;
-  }
-  50% {
-    box-shadow: 0 0 22px #056438,
-      0 0 35px #056438 inset;
-  }
-  100% {
-    box-shadow: 0 0 12px #056438,
-      0 0 25px #056438 inset;
-  }
+  0%
+  50%
+  100%
 }
 
 .card-front h2 {
@@ -117,6 +104,24 @@ body {
 
 .one {
   background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7nTaAxF0UuInLzfNoqkYCkkQ4WGAi1WB9hWiXq_hRcdnEKxX4NqAdDnArymxkvuj_JKY&usqp=CAU");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.two {
+  background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfT7ZgE_K4n5H01aMN7LIcqgoD_k8LyI_olQ&s");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.three {
+  background: url("https://iili.io/KSTNLQ4.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.four {
+  background: url("https://iili.io/KST8L1R.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -196,7 +201,7 @@ ul.features li::before {
     padding: 20px;
   }
   .card-inner {
-    min-height: 300px;
+    min-height: 150px;
   }
   .card-face {
     padding: 18px;
