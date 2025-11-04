@@ -1,5 +1,3 @@
-
-
 article,
 aside,
 details,
@@ -17,7 +15,6 @@ audio,
 canvas,
 video {
   display: inline-block;
-  
 }
 
 audio:not([controls]) {
@@ -37,38 +34,33 @@ html {
 
 body {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.231;
-}
-
-body,
-button,
-input,
-select,
-textarea {
+  font-size: clamp(12px, 1.3vw, 14px);
+  line-height: 1.4;
   font-family: sans-serif;
   color: #222;
+  background: #2b2b2b;
 }
 
-/*Define Accordion box*/
+/* Accordion box */
 .accordion {
+  width: 95%;
   max-width: 830px;
   overflow: hidden;
-  margin: 10px auto;
-  color: #363636;
+  margin: 2vw auto;
+  color: #fafafa;
   background: #414141;
-  padding: 10px;
+  padding: 2vw;
+  border-radius: 10px;
 }
 
-/*General Accordion****************************************************************************/
-/*Set style of open slide*/
+/* Open slide */
 .accordion section:target {
-  background: #FFF;
-  padding: 10px;
+  background: #fff;
+  padding: 2vw;
 }
 
 .accordion section:target:hover {
-  background: #FFF;
+  background: #fff;
 }
 
 .accordion section:target h2 {
@@ -84,23 +76,26 @@ textarea {
   display: block;
 }
 
+/* Header links */
 .accordion section h2 a {
-  padding: 8px 10px;
+  padding: 0.8em 1em;
   display: block;
-  font-size: 16px;
+  font-size: clamp(15px, 1.8vw, 18px);
   font-weight: normal;
   color: #eee;
   text-decoration: none;
 }
 
-/*set style of closed slide*/
+/* Closed slide */
 .accordion section {
   float: left;
   overflow: hidden;
   color: #333;
   cursor: pointer;
   background: #333;
-  margin: 3px;
+  margin: 0.3em;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .accordion section:hover {
@@ -113,110 +108,109 @@ textarea {
 
 .accordion section:after {
   position: relative;
-  font-size: 24px;
+  font-size: clamp(20px, 2.5vw, 26px);
   color: #000;
   font-weight: bold;
 }
 
 .accordion section:nth-child(1):after {
-  content: '1';
+  content: "1";
 }
 
 .accordion section:nth-child(2):after {
-  content: '2';
+  content: "2";
 }
 
 .accordion section:nth-child(3):after {
-  content: '3';
+  content: "3";
 }
 
 .accordion section:nth-child(4):after {
-  content: '4';
+  content: "4";
 }
 
 .accordion section:nth-child(5):after {
-  content: '5';
+  content: "5";
 }
 
-/*End General Accordion****************************************************************************/
-
-/*Horizontal Accordion *********************************************************************/
+/* Horizontal Accordion */
 .horizontal section {
-  width: 5%;
-  height: 250px;
-  -moz-transition: width 0.2s ease-out;
-  -webkit-transition: width 0.2s ease-out;
-  -o-transition: width 0.2s ease-out;
-  -ms-transition: width 0.2s ease-out;
-  transition: width 0.2s ease-out;
+  width: 8%;
+  height: clamp(180px, 35vw, 260px);
+  transition: width 0.3s ease-out;
 }
 
-/*Position the number of the slide*/
 .horizontal section:after {
-  top: 140px;
-  left: 15px;
+  top: 50%;
+  left: 1vw;
+  transform: translateY(-50%);
 }
 
-/*Header of closed slide*/
 .horizontal section h2 {
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
   transform: rotate(90deg);
-  width: 240px;
+  width: clamp(180px, 30vw, 240px);
   position: relative;
-  left: -100px;
-  top: 85px;
+  left: -6vw;
+  top: 35%;
+  transition: transform 0.3s;
 }
 
-/*On mouse over open slide*/
 .horizontal :target {
-  width: 73%;
-  height: 230px;
+  width: 70%;
+  height: clamp(200px, 38vw, 280px);
 }
 
 .horizontal :target h2 {
-  top: 0px;
+  top: 0;
   left: 0;
-  -webkit-transform: rotate(0deg);
-  -moz-transform: rotate(0deg);
-  -o-transform: rotate(0deg);
-  -ms-transform: rotate(0deg);
   transform: rotate(0deg);
 }
 
-/*End Horizontal Accordion *********************************************************************/
-
-/*Vertical Accordion *************************************************************************/
+/* Vertical Accordion */
 .vertical section {
   width: 100%;
-  height: 40px;
-  -webkit-transition: height 0.2s ease-out;
-  -moz-transition: height 0.2s ease-out;
-  -o-transition: height 0.2s ease-out;
-  -ms-transition: height 0.2s ease-out;
-  transition: height 0.2s ease-out;
+  height: clamp(40px, 6vw, 60px);
+  transition: height 0.3s ease-out;
 }
 
-/*Set height of the slide*/
 .vertical :target {
-  height: 250px;
-  width: 97%;
+  height: clamp(220px, 40vw, 300px);
+  width: 100%;
 }
 
 .vertical section h2 {
   position: relative;
   left: 0;
-  top: -15px;
+  top: -0.5em;
 }
 
-/*Set position of the number on the slide*/
 .vertical section:after {
-  top: -60px;
-  left: 810px;
+  top: -2em;
+  right: 2vw;
+  position: absolute;
 }
 
 .vertical section:target:after {
   left: -9999px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .horizontal section {
+    width: 100%;
+    height: clamp(50px, 10vw, 80px);
+  }
+  .horizontal section h2 {
+    transform: rotate(0deg);
+    width: auto;
+    left: 0;
+    top: 0;
+  }
+  .horizontal :target {
+    width: 100%;
+    height: clamp(220px, 45vw, 320px);
+  }
+  .accordion {
+    padding: 4vw;
+  }
 }
