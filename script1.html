@@ -77,13 +77,14 @@
             overflow: hidden;
         }
 
+        /* ИГРОВОЙ ХОЛСТ: Должен быть скрыт сначала */
         canvas.canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: none;
+            display: none; 
         }
 
         .score,
@@ -101,6 +102,7 @@
             top: 40px;
         }
 
+        /* ЭКРАН РЕЗУЛЬТАТОВ/СТАРТОВЫЙ ЭКРАН: Теперь будет виден */
         .result {
             position: absolute;
             width: 80%;
@@ -108,7 +110,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: Arial, sans-serif;
-            display: none;
+            /* display: none; БЫЛ УДАЛЕН */
         }
 
         .result .content {
