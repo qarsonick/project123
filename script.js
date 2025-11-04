@@ -3,28 +3,23 @@ const startGame = document.querySelector(".start-game-btn");
 const result = document.querySelector(".result");
 
 const canvas = document.querySelector(".canvas");
-const context = canvas.getContext("2d");
 
-// --- 📏 Адаптивный размер canvas ---
-let midX, midY;
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    midX = canvas.width / 2;
-    midY = canvas.height / 2;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// --- 👤 Игрок ---
+const midX = canvas.width / 2;
+const midY = canvas.height / 2;
+context = canvas.getContext("2d");
+
+
 class Player {
     constructor() {
-        this.width = canvas.width * 0.08;   // адаптивно
-        this.height = this.width;
+        this.width = 100;
+        this.height = 100;
         this.position = {
             x: midX - this.width / 2,
             y: midY - this.height / 2,
-        };
+        }
         this.sprite = {
             stand: {
                 spriteNum: 1,
@@ -49,8 +44,8 @@ class Player {
                 image: createImage("photos/playerSpriteShoot.png"),
                 cropWidth: 312,
                 height: 206,
-            },
-        };
+            }
+        }
         this.currentSpriteNum = 1;
         this.currentSprite = this.sprite.stand.image;
         this.currentCropWidth = this.sprite.stand.cropWidth;
@@ -62,7 +57,7 @@ class Player {
     draw() {
         context.beginPath();
         context.save();
-        context.translate(midX - 15, midY);
+        context.translate(midX-15, midY);
         context.rotate(this.rotation);
         context.translate(-midX + 15, -midY);
         context.drawImage(
@@ -102,9 +97,8 @@ class Player {
     }
 }
 
-// --- 💥 Пули ---
-class Projectiles {
-    constructor(position, velocity, rotation) {
+class Projectiles{
+    constructor(position , velocity , rotation) {
         this.width = 12;
         this.height = 3;
         this.image = createImage("photos/пуля.png");
@@ -112,7 +106,7 @@ class Projectiles {
         this.velocity = velocity;
         this.rotation = rotation;
     }
-
+    
     draw() {
         context.beginPath();
         context.save();
@@ -141,18 +135,17 @@ class Projectiles {
     }
 }
 
-// --- 🧟 Враги ---
-class Enemy {
-    constructor(position, velocity, rotation) {
+class Enemy{
+    constructor(position, velocity , rotation) {
         this.image = createImage("photos/zombieSpritewalk.png");
-        this.width = canvas.width * 0.06; // адаптивно
-        this.height = this.width * 0.6;
-        this.position = position;
+        this.width = 85;
+        this.height = 50;
+        this.position = position
         this.velocity = velocity;
         this.rotation = rotation;
         this.frame = 0;
     }
-
+    
     draw() {
         this.radius = 15;
         this.cirX = this.position.x + (this.width - this.height);
@@ -192,17 +185,19 @@ class Enemy {
     }
 }
 
-// --- 💨 Частицы ---
 const friction = 0.98;
-class Particle {
-    constructor(x, y, radius, color, velocity) {
-        this.position = { x, y };
+class Particle{
+    constructor(x , y, radius, color, velocity) {
+        this.position = {
+            x: x,
+            y: y,
+        }
         this.radius = radius;
         this.color = color;
         this.velocity = velocity;
         this.alpha = 1;
     }
-
+    
     draw() {
         context.beginPath();
         context.save();
@@ -224,11 +219,12 @@ class Particle {
     }
 }
 
-// --- ⚙️ Игровая логика ---
+
 let player = new Player();
 let projectiles = [];
 let enemies = [];
 let particles = [];
+
 
 function createImage(path) {
     const img = new Image();
@@ -247,14 +243,18 @@ function spawnEnemies() {
             position.y = Math.random() < 0.5 ? 0 - 256 : canvas.height + 50;
         }
 
-        const angle = Math.atan2(player.position.y - position.y, player.position.x - position.x);
+        const angle = Math.atan2((player.position.y) - position.y, (player.position.x) - position.x);
         const velocity = {
             x: Math.cos(angle) * 0.5,
             y: Math.sin(angle) * 0.5,
-        };
+        }
 
-        enemies.push(new Enemy(position, velocity, angle));
-    }, 1000);
+        enemies.push(
+            new Enemy(position, velocity, angle)
+        );
+
+
+    } , 1000);
 }
 
 function initGame() {
@@ -263,40 +263,51 @@ function initGame() {
     enemies = [];
     particles = [];
     score = 0;
-    scoreElements.forEach(scoreEl => scoreEl.innerHTML = score);
+    scoreElements.forEach(scoreEl => {
+        scoreEl.innerHTML = score;
+    });
     animate();
     spawnEnemies();
 }
+
 
 let animateID;
 let score = 0;
 function animate() {
     animateID = requestAnimationFrame(animate);
-    context.clearRect(0, 0, canvas.width, canvas.height); // прозрачный фон
+    context.fillStyle = "black";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     player.update();
 
-    particles.forEach((particle, index) => {
-        if (particle.alpha <= 0) particles.splice(index, 1);
-        else particle.update();
-    });
-
-    projectiles.forEach((projectile, index) => {
-        projectile.update();
-        if (
-            projectile.position.x > canvas.width ||
-            projectile.position.y > canvas.height ||
-            projectile.position.x + projectile.width < 0 ||
-            projectile.position.y + projectile.height < 0
-        ) {
-            setTimeout(() => projectiles.splice(index, 1));
+    particles.forEach((particle , index) => {
+        if (particle.alpha <= 0) {
+            particles.splice(index, 1);
+        } else {
+            particle.update();
         }
     });
 
-    enemies.forEach(enemy => enemy.update());
+    projectiles.forEach((projectile , index) => {
+        projectile.update();
+
+        if (projectile.position.x > canvas.width || 
+            projectile.position.y > canvas.height ||
+            projectile.position.x + projectile.width < 0 ||
+            projectile.position.y + projectile.height < 0 ) {
+            setTimeout(() => {
+                projectiles.splice(index, 1);
+            });
+        }
+    });
+
+    enemies.forEach(enemy => {
+        enemy.update();
+    });
 
     enemies.forEach((enemy, enemyIndex) => {
-        const dis = Math.hypot(midX - 10 - enemy.cirX, midY + 10 - enemy.cirY);
+        const dis = Math.hypot((midX - 10 )- enemy.cirX,
+            (midY + 10) - enemy.cirY);
         if (dis - enemy.radius - 20 < 1) {
             cancelAnimationFrame(animateID);
             scoreElements[1].innerHTML = score;
@@ -308,7 +319,8 @@ function animate() {
             const dis = Math.hypot(projectile.position.x + 2 - enemy.cirX,
                 projectile.position.y + 2 - enemy.cirY);
             if (dis - enemy.radius - 6 < 1) {
-                for (let i = 0; i < 15; i++) {
+                
+                for (let i = 0; i < 15 ; i++){
                     particles.push(new Particle(
                         enemy.position.x + enemy.width / 2,
                         enemy.position.y + enemy.height / 2,
@@ -324,27 +336,29 @@ function animate() {
                     enemies.splice(enemyIndex, 1);
                     projectiles.splice(projectileIndex, 1);
                 });
-                score += 100;
+                score += 100
                 scoreElements[0].innerHTML = score;
             }
         });
     });
 }
 
-// --- 🖱️ Управление ---
 canvas.addEventListener("click", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
+    const angle = Math.atan2(event.clientY - (midY), event.clientX - (midX - 15));
+    const angle2 = Math.atan2(event.clientY - (midY + 24), event.clientX - (midX + 40));
     const velocity = {
         x: Math.cos(angle) * 5,
         y: Math.sin(angle) * 5,
-    };
+    }
     let position = {
-        x: midX - 15,
-        y: midY,
-    };
+        x: (midX - 15),
+        y: (midY),
+    }
     position.x += (40 * Math.cos(angle) - 20 * Math.sin(angle));
     position.y += (40 * Math.sin(angle) + 20 * Math.cos(angle));
-    projectiles.push(new Projectiles(position, velocity, angle));
+    projectiles.push(
+        new Projectiles(position, velocity, angle)
+    );
 
     player.currentSpriteNum = player.sprite.shoot.spriteNum;
     player.currentSprite = player.sprite.shoot.image;
@@ -352,15 +366,15 @@ canvas.addEventListener("click", (event) => {
     player.currentHeight = player.sprite.shoot.height;
 });
 
-document.addEventListener("contextmenu", (e) => {
+document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 
-    if (score >= 5000) {
+    if(score >= 5000){
         score += enemies.length * 100 - 5000;
         scoreElements[0].innerHTML = score;
 
         enemies.forEach((enemy) => {
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 15 ; i++){
                 particles.push(new Particle(
                     enemy.position.x + enemy.width / 2,
                     enemy.position.y + enemy.height / 2,
@@ -378,7 +392,7 @@ document.addEventListener("contextmenu", (e) => {
 });
 
 window.addEventListener("mousemove", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
+    const angle = Math.atan2(event.clientY - (midY), event.clientX - (midX - 15));
     player.rotation = angle;
 });
 
