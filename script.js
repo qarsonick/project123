@@ -6,7 +6,7 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
-  // ----- адаптивний розмір -----
+  // Масштабування
   function resizeCanvas() {
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
@@ -18,20 +18,21 @@
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
 
-  // ----- завантаження ресурсів -----
+  // Завантаження зображень
   function loadImage(src) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const img = new Image();
       img.onload = () => resolve(img);
       img.onerror = () => {
-        console.warn('Не знайдено:', src);
+        console.error('Не вдалося завантажити:', src);
         resolve(null);
       };
       img.src = src;
     });
   }
 
-  const resources = {
+  // Ресурси
+  const images = {
     playerIdle: 'photos/playerSpriteIdle.png',
     playerShoot: 'photos/playerSpriteShoot.png',
     playerReload: 'photos/playerSpriteReload.png',
@@ -41,20 +42,18 @@
   };
 
   let player, bullets, enemies, particles;
-  let preloaded = {};
-  let score = 0;
   let animationId = null;
-  let spawnInterval = null;
+  let score = 0;
+  let loaded = {};
 
   const mid = () => ({ x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 });
 
-  // ----- класи -----
   class Player {
     constructor(imgs) {
       const m = mid();
       this.width = 100;
       this.height = 100;
-      this.position = { x: m.x - this.width / 2, y: m.y - this.height / 2 };
+      this.position = { x: m.x - 50, y: m.y - 50 };
       this.rotation = 0;
       this.frame = 0;
       this.sprite = {
@@ -67,9 +66,10 @@
     draw() {
       const m = mid();
       ctx.save();
-      ctx.translate(m.x - 15, m.y);
+      ctx.translate(m.x, m.y);
       ctx.rotate(this.rotation);
-      ctx.translate(-(m.x - 15), -m.y);
+      ctx.translate(-m.x, -m.y);
+
       if (this.current) {
         ctx.drawImage(this.current, this.position.x, this.position.y, this.width, this.height);
       } else {
@@ -80,10 +80,7 @@
       }
       ctx.restore();
     }
-    update() {
-      this.frame = (this.frame + 1) % 32;
-      this.draw();
-    }
+    update() { this.draw(); }
     shootAnim() {
       this.current = this.sprite.shoot;
       setTimeout(() => {
@@ -91,7 +88,7 @@
         setTimeout(() => {
           this.current = this.sprite.stand;
         }, 500);
-      }, 300);
+      }, 200);
     }
   }
 
@@ -101,25 +98,16 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 12;
-      this.height = 3;
-    }
-    draw() {
-      ctx.save();
-      ctx.translate(this.position.x, this.position.y);
-      ctx.rotate(this.rotation);
-      if (this.image) {
-        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
-      } else {
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-      }
-      ctx.restore();
     }
     update() {
       this.position.x += this.velocity.x;
       this.position.y += this.velocity.y;
-      this.draw();
+      if (this.image)
+        ctx.drawImage(this.image, this.position.x, this.position.y, 12, 4);
+      else {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(this.position.x, this.position.y, 6, 3);
+      }
     }
   }
 
@@ -129,140 +117,74 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 85;
-      this.height = 50;
+      this.width = 80;
+      this.height = 80;
     }
-    draw() {
+    update() {
+      this.position.x += this.velocity.x;
+      this.position.y += this.velocity.y;
       ctx.save();
       ctx.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
       ctx.rotate(this.rotation);
-      if (this.image) {
+      if (this.image)
         ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
-      } else {
+      else {
         ctx.fillStyle = 'red';
         ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
       }
       ctx.restore();
     }
-    update() {
-      this.position.x += this.velocity.x;
-      this.position.y += this.velocity.y;
-      this.draw();
-    }
-  }
-
-  class Particle {
-    constructor(x, y, r, color, vel) {
-      this.x = x; this.y = y; this.radius = r; this.color = color; this.velocity = vel; this.alpha = 1;
-    }
-    draw() {
-      ctx.save();
-      ctx.globalAlpha = this.alpha;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.fill();
-      ctx.restore();
-    }
-    update() {
-      this.velocity.x *= 0.98;
-      this.velocity.y *= 0.98;
-      this.x += this.velocity.x;
-      this.y += this.velocity.y;
-      this.alpha -= 0.01;
-      this.draw();
-    }
   }
 
   async function preload() {
-    for (const [key, src] of Object.entries(resources)) {
-      preloaded[key] = await loadImage(src);
-    }
+    for (const [k, path] of Object.entries(images))
+      loaded[k] = await loadImage(path);
   }
 
-  function init() {
+  function initGame() {
     resizeCanvas();
-    player = new Player(preloaded);
+    player = new Player(loaded);
     bullets = [];
     enemies = [];
     particles = [];
     score = 0;
-    if (scoreDisplay) scoreDisplay.textContent = score;
-    if (resultScreen) resultScreen.style.display = 'none';
+    scoreDisplay.textContent = score;
+    resultScreen.style.display = 'none';
   }
 
   function spawnEnemies() {
-    spawnInterval = setInterval(() => {
+    setInterval(() => {
+      const side = Math.random() < 0.5 ? 'x' : 'y';
       const pos = { x: 0, y: 0 };
-      if (Math.random() < 0.5) {
-        pos.x = Math.random() < 0.5 ? -256 : canvas.clientWidth + 85;
+      if (side === 'x') {
+        pos.x = Math.random() < 0.5 ? -80 : canvas.clientWidth + 80;
         pos.y = Math.random() * canvas.clientHeight;
       } else {
         pos.x = Math.random() * canvas.clientWidth;
-        pos.y = Math.random() < 0.5 ? -256 : canvas.clientHeight + 50;
+        pos.y = Math.random() < 0.5 ? -80 : canvas.clientHeight + 80;
       }
-      const angle = Math.atan2(player.position.y - pos.y, player.position.x - pos.x);
-      const velocity = { x: Math.cos(angle) * 0.6, y: Math.sin(angle) * 0.6 };
-      enemies.push(new Enemy(pos, velocity, angle, preloaded.zombieWalk));
-    }, 1000);
+      const angle = Math.atan2(mid().y - pos.y, mid().x - pos.x);
+      const vel = { x: Math.cos(angle) * 0.8, y: Math.sin(angle) * 0.8 };
+      enemies.push(new Enemy(pos, vel, angle, loaded.zombieWalk));
+    }, 1200);
   }
 
   function animate() {
     animationId = requestAnimationFrame(animate);
-
-    // фон
-    if (preloaded.grass) {
-      ctx.drawImage(preloaded.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
-      ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-    } else {
+    if (loaded.grass)
+      ctx.drawImage(loaded.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
+    else {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
 
     player.update();
-
-    particles.forEach((p, i) => {
-      if (p.alpha <= 0) particles.splice(i, 1);
-      else p.update();
-    });
-
-    bullets.forEach((b, i) => {
-      b.update();
-      if (
-        b.position.x > canvas.clientWidth + 50 ||
-        b.position.y > canvas.clientHeight + 50 ||
-        b.position.x < -50 ||
-        b.position.y < -50
-      ) {
-        bullets.splice(i, 1);
-      }
-    });
-
-    enemies.forEach((enemy, ei) => {
-      enemy.update();
-      const m = mid();
-      const dx = m.x - (enemy.position.x + enemy.width / 2);
-      const dy = m.y - (enemy.position.y + enemy.height / 2);
-      const dist = Math.hypot(dx, dy);
-      if (dist < 40) {
-        cancelAnimationFrame(animationId);
-        clearInterval(spawnInterval);
-        resultScreen.style.display = 'flex';
-      }
-
-      bullets.forEach((bullet, bi) => {
-        const d = Math.hypot(bullet.position.x - enemy.position.x, bullet.position.y - enemy.position.y);
-        if (d < 30) {
-          for (let i = 0; i < 12; i++) {
-            particles.push(new Particle(
-              bullet.position.x,
-              bullet.position.y,
-              Math.random() * 3,
-              'red',
-              { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
-            ));
-          }
+    bullets.forEach(b => b.update());
+    enemies.forEach((e, ei) => {
+      e.update();
+      bullets.forEach((b, bi) => {
+        const dist = Math.hypot(b.position.x - e.position.x, b.position.y - e.position.y);
+        if (dist < 30) {
           enemies.splice(ei, 1);
           bullets.splice(bi, 1);
           score += 100;
@@ -282,32 +204,24 @@
       x: cx - rect.left + 40 * Math.cos(angle),
       y: cy - rect.top + 40 * Math.sin(angle)
     };
-    bullets.push(new Bullet(position, velocity, angle, preloaded.projectile));
+    bullets.push(new Bullet(position, velocity, angle, loaded.projectile));
     player.shootAnim();
   });
 
-  window.addEventListener('mousemove', (event) => {
+  window.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     const cx = rect.left + canvas.clientWidth / 2;
     const cy = rect.top + canvas.clientHeight / 2;
-    const angle = Math.atan2(event.clientY - cy, event.clientX - cx);
+    const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
     if (player) player.rotation = angle;
   });
 
-  async function setup() {
-    await preload();
-    if (startBtn) {
-      startBtn.addEventListener('click', () => {
-        init();
-        animate();
-        spawnEnemies();
-      });
-    } else {
-      init();
+  preload().then(() => {
+    startBtn.addEventListener('click', () => {
+      canvas.style.display = 'block';
+      initGame();
       animate();
       spawnEnemies();
-    }
-  }
-
-  setup();
+    });
+  });
 })();
