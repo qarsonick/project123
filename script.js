@@ -47,12 +47,6 @@ class Player {
                 cropWidth: 313,
                 height: 207,
             },
-            move: {
-                spriteNum: 2,
-                image: createImage("img/playerSpriteMove.png"),
-                cropWidth: 313,
-                height: 206,
-            },
             reload: {
                 spriteNum: 3,
                 image: createImage("img/playerSpriteReload.png"),
@@ -130,21 +124,22 @@ class Projectiles {
     draw() {
         context.beginPath(); 
         context.save();
-        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
-        context.rotate(this.rotation);
-        context.translate(-(this.position.x + this.width / 2), -(this.position.y + this.height / 2));
         
+        // 1. Перенос контекста в центр пули
+        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2); 
+        
+        // 2. Вращение
+        context.rotate(this.rotation);
+        
+        // 3. Рисование относительно нового (0,0)
         context.drawImage(
             this.image, 
-            0, 
-            0, 
-            30, 
-            8, 
-            this.position.x, 
-            this.position.y, 
-            this.width, 
-            this.height 
+            0, 0, 30, 8, 
+            -this.width / 2, 
+            -this.height / 2, 
+            this.width, this.height 
         );
+        
         context.restore();
         context.closePath(); 
     }
@@ -255,7 +250,8 @@ function spawnEnemies() {
             position.y = Math.random() < 0.5 ? -256 : canvas.height + 50;
         }
 
-        const angle = Math.atan2(player.position.y - position.y, player.position.x - position.x);
+        // ИСПРАВЛЕНИЕ: Целимся в центр канваса (midX, midY)
+        const angle = Math.atan2(midY - position.y, midX - position.x);
         const velocity = { x: Math.cos(angle) * 0.5, y: Math.sin(angle) * 0.5 };
         enemies.push(new Enemy(position, velocity, angle));
     }, 1000);
