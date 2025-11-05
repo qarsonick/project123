@@ -1,27 +1,37 @@
 const scoreElements = document.querySelectorAll(".score-num");
 const startGame = document.querySelector(".start-game-btn");
 const result = document.querySelector(".result");
+const soundPlay = document.querySelector(".sound-btn");
+const soundmuted = document.querySelector(".muted-btn");
 
 const canvas = document.querySelector(".canvas");
-const gameContainer = document.querySelector(".desktop-container");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const midX = canvas.width / 2;
+const midY = canvas.height / 2;
 const context = canvas.getContext("2d");
 
-// =============================
-// ⚙️ Настройка размеров canvas
-// =============================
-function resizeCanvas() {
-    canvas.width = gameContainer.clientWidth;
-    canvas.height = gameContainer.clientHeight;
+function createAudio(path) {
+    const audio = new Audio();
+    audio.src = path;
+    audio.loop = path.includes("background"); 
+    return audio;
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
 
-let midX = canvas.width / 2;
-let midY = canvas.height / 2;
+const backgroundSound = createAudio("audio/backgroundSound.mp3"); 
+const shoot = createAudio("audio/shot-and-reload.mp3");
+const killingZombie = createAudio("audio/killed_zombie.mp3");
+const boomSound = createAudio("audio/boom.mp3");
+let muted = false;
 
-// =============================
-// 👤 Класс игрока
-// =============================
+function createImage(path) {
+    const img = new Image();
+    img.src = path.replace("photos/", "img/"); 
+    return img;
+}
+
 class Player {
     constructor() {
         this.width = 100;
@@ -33,25 +43,25 @@ class Player {
         this.sprite = {
             stand: {
                 spriteNum: 1,
-                image: createImage("photos/playerSpriteIdle.png"),
+                image: createImage("img/playerSpriteIdle.png"),
                 cropWidth: 313,
                 height: 207,
             },
             move: {
                 spriteNum: 2,
-                image: createImage("photos/playerSpriteMove.png"),
+                image: createImage("img/playerSpriteMove.png"),
                 cropWidth: 313,
                 height: 206,
             },
             reload: {
                 spriteNum: 3,
-                image: createImage("photos/playerSpriteReload.png"),
+                image: createImage("img/playerSpriteReload.png"),
                 cropWidth: 322,
                 height: 217,
             },
             shoot: {
                 spriteNum: 4,
-                image: createImage("photos/playerSpriteShoot.png"),
+                image: createImage("img/playerSpriteShoot.png"),
                 cropWidth: 312,
                 height: 206,
             },
@@ -65,8 +75,9 @@ class Player {
     }
 
     draw() {
+        context.beginPath(); 
         context.save();
-        context.translate(midX - 15, midY);
+        context.translate(midX - 15, midY); 
         context.rotate(this.rotation);
         context.translate(-midX + 15, -midY);
         context.drawImage(
@@ -81,6 +92,7 @@ class Player {
             this.height
         );
         context.restore();
+        context.closePath(); 
     }
 
     update() {
@@ -105,25 +117,36 @@ class Player {
     }
 }
 
-// =============================
-// 💥 Пули
-// =============================
 class Projectiles {
     constructor(position, velocity, rotation) {
         this.width = 12;
         this.height = 3;
-        this.image = createImage("photos/пуля.png");
+        this.image = createImage("img/projectile.png"); 
         this.position = position;
         this.velocity = velocity;
         this.rotation = rotation;
     }
 
     draw() {
+        context.beginPath(); 
         context.save();
-        context.translate(this.position.x, this.position.y);
+        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
         context.rotate(this.rotation);
-        context.drawImage(this.image, 0, 0, 30, 8, this.position.x, this.position.y, this.width, this.height);
+        context.translate(-(this.position.x + this.width / 2), -(this.position.y + this.height / 2));
+        
+        context.drawImage(
+            this.image, 
+            0, 
+            0, 
+            30, 
+            8, 
+            this.position.x, 
+            this.position.y, 
+            this.width, 
+            this.height 
+        );
         context.restore();
+        context.closePath(); 
     }
 
     update() {
@@ -133,12 +156,9 @@ class Projectiles {
     }
 }
 
-// =============================
-// 🧟 Враги
-// =============================
 class Enemy {
     constructor(position, velocity, rotation) {
-        this.image = createImage("photos/zombieSpritewalk.png");
+        this.image = createImage("img/zombieSpritewalk.png"); 
         this.width = 85;
         this.height = 50;
         this.position = position;
@@ -152,9 +172,12 @@ class Enemy {
         this.cirX = this.position.x + (this.width - this.height);
         this.cirY = this.position.y + this.height / 2;
 
+        context.beginPath(); 
         context.save();
         context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
         context.rotate(this.rotation);
+        context.translate(-this.position.x - this.width / 2, -this.position.y - this.height / 2); 
+
         context.drawImage(
             this.image,
             (this.frame * 256) + 95,
@@ -167,20 +190,22 @@ class Enemy {
             this.height
         );
         context.restore();
+        context.closePath(); 
     }
 
     update() {
-        if (this.frame >= 31) this.frame = 0;
-        else setTimeout(() => this.frame++, 100);
+        if (this.frame >= 31) {
+            this.frame = 0;
+        } else {
+            this.frame++; 
+        }
+        
         this.draw();
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
     }
 }
 
-// =============================
-// 🔥 Частицы
-// =============================
 const friction = 0.98;
 class Particle {
     constructor(x, y, radius, color, velocity) {
@@ -192,13 +217,14 @@ class Particle {
     }
 
     draw() {
+        context.beginPath(); 
         context.save();
         context.globalAlpha = this.alpha;
         context.fillStyle = this.color;
-        context.beginPath();
         context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
         context.fill();
         context.restore();
+        context.closePath(); 
     }
 
     update() {
@@ -211,23 +237,13 @@ class Particle {
     }
 }
 
-// =============================
-// 🧩 Игровая логика
-// =============================
-let player = new Player();
+let player;
 let projectiles = [];
 let enemies = [];
 let particles = [];
 let animateID;
 let score = 0;
 
-function createImage(path) {
-    const img = new Image();
-    img.src = path;
-    return img;
-}
-
-// Спавн врагов
 function spawnEnemies() {
     setInterval(() => {
         const position = { x: 0, y: 0 };
@@ -246,10 +262,6 @@ function spawnEnemies() {
 }
 
 function initGame() {
-    resizeCanvas();
-    midX = canvas.width / 2;
-    midY = canvas.height / 2;
-
     player = new Player();
     projectiles = [];
     enemies = [];
@@ -257,29 +269,43 @@ function initGame() {
     score = 0;
     scoreElements.forEach(s => (s.innerHTML = score));
 
+    backgroundSound.currentTime = 0; 
+    backgroundSound.play();
+    backgroundSound.volume = muted ? 0 : 0.1;
+
     animate();
     spawnEnemies();
 }
 
-// Анимация
 function animate() {
     animateID = requestAnimationFrame(animate);
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
+
+    backgroundSound.volume = muted ? 0 : 0.1; 
+
     player.update();
 
     particles = particles.filter(p => p.alpha > 0);
     particles.forEach(p => p.update());
+    
     projectiles.forEach((p, i) => {
         p.update();
-        if (p.position.x > canvas.width || p.position.y > canvas.height || p.position.x < 0 || p.position.y < 0)
-            projectiles.splice(i, 1);
+        if (p.position.x > canvas.width || p.position.y > canvas.height || p.position.x < 0 || p.position.y < 0) {
+            setTimeout(() => projectiles.splice(i, 1));
+        }
     });
+
     enemies.forEach(e => e.update());
 
     enemies.forEach((enemy, enemyIndex) => {
-        const dis = Math.hypot(midX - 10 - enemy.cirX, midY + 10 - enemy.cirY);
-        if (dis - enemy.radius - 20 < 1) {
+        const disPlayer = Math.hypot((midX - 10) - enemy.cirX, (midY + 10) - enemy.cirY);
+        if (disPlayer - enemy.radius - 20 < 1) { 
+            if (!muted) {
+                const zombieEat = createAudio("audio/zombieEat.mp3");
+                zombieEat.play();
+                backgroundSound.pause();
+            }
             cancelAnimationFrame(animateID);
             scoreElements[1].innerHTML = score;
             canvas.style.display = "none";
@@ -287,8 +313,14 @@ function animate() {
         }
 
         projectiles.forEach((projectile, projectileIndex) => {
-            const dis = Math.hypot(projectile.position.x + 2 - enemy.cirX, projectile.position.y + 2 - enemy.cirY);
-            if (dis - enemy.radius - 6 < 1) {
+            const disProjectile = Math.hypot(projectile.position.x + 2 - enemy.cirX, projectile.position.y + 2 - enemy.cirY);
+            if (disProjectile - enemy.radius - 6 < 1) {
+                if (!muted) {
+                    shoot.pause(); 
+                    shoot.currentTime = 0; 
+                    killingZombie.play();
+                }
+
                 for (let i = 0; i < 15; i++) {
                     particles.push(
                         new Particle(
@@ -300,8 +332,12 @@ function animate() {
                         )
                     );
                 }
-                enemies.splice(enemyIndex, 1);
-                projectiles.splice(projectileIndex, 1);
+                
+                setTimeout(() => {
+                    enemies.splice(enemyIndex, 1);
+                    projectiles.splice(projectileIndex, 1);
+                });
+                
                 score += 100;
                 scoreElements[0].innerHTML = score;
             }
@@ -309,21 +345,29 @@ function animate() {
     });
 }
 
-// =============================
-// 🎯 Управление
-// =============================
 canvas.addEventListener("click", (event) => {
     const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
     const velocity = { x: Math.cos(angle) * 5, y: Math.sin(angle) * 5 };
+    
     let position = { x: midX - 15, y: midY };
+    
     position.x += 40 * Math.cos(angle) - 20 * Math.sin(angle);
     position.y += 40 * Math.sin(angle) + 20 * Math.cos(angle);
+    
     projectiles.push(new Projectiles(position, velocity, angle));
 
     player.currentSpriteNum = player.sprite.shoot.spriteNum;
     player.currentSprite = player.sprite.shoot.image;
     player.currentCropWidth = player.sprite.shoot.cropWidth;
     player.currentHeight = player.sprite.shoot.height;
+    player.frame = 0; 
+
+    if (!muted) {
+        shoot.playbackRate = 2;
+        shoot.volume = 0.5;
+        shoot.currentTime = 0; 
+        shoot.play();
+    }
 });
 
 document.addEventListener("contextmenu", (e) => {
@@ -331,6 +375,7 @@ document.addEventListener("contextmenu", (e) => {
     if (score >= 5000) {
         score += enemies.length * 100 - 5000;
         scoreElements[0].innerHTML = score;
+
         enemies.forEach((enemy) => {
             for (let i = 0; i < 15; i++) {
                 particles.push(
@@ -344,7 +389,13 @@ document.addEventListener("contextmenu", (e) => {
                 );
             }
         });
-        enemies = [];
+        enemies = []; 
+        
+        if (!muted) {
+            boomSound.currentTime = 0;
+            boomSound.volume = 0.2;
+            boomSound.play();
+        }
     }
 });
 
@@ -358,3 +409,17 @@ startGame.addEventListener("click", () => {
     canvas.style.display = "block";
     initGame();
 });
+
+if (soundPlay && soundmuted) { 
+    soundPlay.addEventListener("click", () => {
+        muted = true;
+        soundPlay.style.display = "none";
+        soundmuted.style.display = "block";
+    });
+
+    soundmuted.addEventListener("click", () => {
+        muted = false;
+        soundmuted.style.display = "none";
+        soundPlay.style.display = "block";
+    });
+}
