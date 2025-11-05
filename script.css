@@ -87,7 +87,7 @@ body {
 
 /* Canvas */
 .canvas {
-    width: 100%;
+    width: 150%;
     height: 100%;
     position: absolute;
     top: 0;
@@ -167,3 +167,4 @@ body {
     font-size: clamp(10px, 2vw, 14px);
     text-align: center;
 }
+
