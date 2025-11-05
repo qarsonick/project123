@@ -137,10 +137,12 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 85;
+      this.width = 85; // відображення на канвасі
       this.height = 50;
       this.frame = 0;
       this.framesCount = 32; // кількість кадрів анімації
+      this.frameWidth = 256; // реальна ширина кадра у PNG
+      this.frameHeight = 256; // висота кадра
     }
 
     draw() {
@@ -150,10 +152,10 @@
       ctx.translate(-this.position.x - this.width / 2, -this.position.y - this.height / 2);
       ctx.drawImage(
         this.image,
-        this.width * this.frame,
-        0,
-        this.width,
-        this.height,
+        this.frame * this.frameWidth, // cropX
+        0,                           // cropY
+        this.frameWidth,             // cropWidth
+        this.frameHeight,            // cropHeight
         this.position.x,
         this.position.y,
         this.width,
