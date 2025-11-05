@@ -137,12 +137,15 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 85; // відображення на канвасі
+      this.width = 85;
       this.height = 50;
       this.frame = 0;
-      this.framesCount = 32; // кількість кадрів анімації
-      this.frameWidth = 256; // реальна ширина кадра у PNG
-      this.frameHeight = 256; // висота кадра
+      this.framesCount = 32;
+      // Специфічні crop значення для видимості зомбі
+      this.cropXOffset = 95;
+      this.cropYOffset = 100;
+      this.frameWidth = 256;
+      this.frameHeight = 256;
     }
 
     draw() {
@@ -152,10 +155,10 @@
       ctx.translate(-this.position.x - this.width / 2, -this.position.y - this.height / 2);
       ctx.drawImage(
         this.image,
-        this.frame * this.frameWidth, // cropX
-        0,                           // cropY
-        this.frameWidth,             // cropWidth
-        this.frameHeight,            // cropHeight
+        this.frame * this.frameWidth + this.cropXOffset,
+        this.cropYOffset,
+        this.width,
+        this.height,
         this.position.x,
         this.position.y,
         this.width,
