@@ -1,4 +1,3 @@
-// game.js — надежная версия с прелоадом и фолбэком
 (() => {
   const canvas = document.querySelector('.canvas');
   const ctx = canvas.getContext('2d');
@@ -7,79 +6,49 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
-  // если какие-то селекторы не найдены — логируем
-  if (!canvas) console.error('Canvas .canvas не найден в DOM');
-  if (!startBtn) console.warn('Кнопка .start-game-btn не найдена — игра можно запустить автозапуском');
-
-  // ----- resize canvas правильно (учет CSS размеров и DPR) -----
+  // ----- адаптивний розмір -----
   function resizeCanvas() {
-    // используем клиентские размеры, чтобы соответствовать CSS
     const w = canvas.clientWidth || window.innerWidth;
     const h = canvas.clientHeight || window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // упрощённый масштаб для рисования в CSS px
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
 
-  // ----- утилиты прелоада -----
+  // ----- завантаження ресурсів -----
   function loadImage(src) {
     return new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => resolve({ img, ok: true });
+      img.onload = () => resolve(img);
       img.onerror = () => {
-        console.error('Не удалось загрузить изображение:', src);
-        resolve({ img: null, ok: false, src });
+        console.warn('Не знайдено:', src);
+        resolve(null);
       };
       img.src = src;
     });
   }
-  function loadAudio(src) {
-    return new Promise((resolve) => {
-      const audio = new Audio();
-      audio.oncanplaythrough = () => resolve({ audio, ok: true });
-      audio.onerror = () => {
-        console.warn('Не удалось загрузить аудио:', src);
-        resolve({ audio: null, ok: false, src });
-      };
-      audio.src = src;
-      // Не обязательно ждать окончания загрузки коротких эффектов
-    });
-  }
 
-  // ----- перечислим ресурсы (пути можно править) -----
   const resources = {
-    images: {
-      playerIdle: 'img/playerSpriteIdle.png',
-      playerShoot: 'img/playerSpriteShoot.png',
-      playerReload: 'img/playerSpriteReload.png',
-      zombieWalk: 'img/zombieSpritewalk.png',
-      projectile: 'img/projectile.png',
-      // фон опционален — если нет, фон будет чёрный
-      grass: 'img/grass.jpg'
-    },
-    audios: {
-      background: 'audio/backgroundSound.mp3',
-      shoot: 'audio/shot-and-reload.mp3',
-      kill: 'audio/killed_zombie.mp3',
-      boom: 'audio/boom.mp3'
-    }
+    playerIdle: 'photos/playerSpriteIdle.png',
+    playerShoot: 'photos/playerSpriteShoot.png',
+    playerReload: 'photos/playerSpriteReload.png',
+    zombieWalk: 'photos/zombieSpritewalk.png',
+    projectile: 'photos/projectile.png',
+    grass: 'photos/grass.jpg'
   };
 
-  // ----- глобальные игровые переменные -----
   let player, bullets, enemies, particles;
-  let animationId = null;
+  let preloaded = {};
   let score = 0;
-  let preloaded = { images: {}, audios: {} };
-  let imagesOk = true;
+  let animationId = null;
+  let spawnInterval = null;
 
-  // ----- классы (аналогично прежде) -----
   const mid = () => ({ x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 });
 
+  // ----- класи -----
   class Player {
     constructor(imgs) {
       const m = mid();
@@ -89,9 +58,9 @@
       this.rotation = 0;
       this.frame = 0;
       this.sprite = {
-        stand: { image: imgs.playerIdle, cropW: 313, h: 207 },
-        shoot: { image: imgs.playerShoot, cropW: 312, h: 206 },
-        reload: { image: imgs.playerReload, cropW: 322, h: 217 }
+        stand: imgs.playerIdle,
+        shoot: imgs.playerShoot,
+        reload: imgs.playerReload
       };
       this.current = this.sprite.stand;
     }
@@ -101,23 +70,9 @@
       ctx.translate(m.x - 15, m.y);
       ctx.rotate(this.rotation);
       ctx.translate(-(m.x - 15), -m.y);
-
-      // если изображение доступно — рисуем спрайт, иначе — фолбэк (круг)
-      if (this.current.image && this.current.image.complete) {
-        const cropW = this.current.cropW;
-        ctx.drawImage(
-          this.current.image,
-          cropW * (this.frame % 16),
-          0,
-          cropW,
-          this.current.h,
-          this.position.x,
-          this.position.y,
-          this.width,
-          this.height
-        );
+      if (this.current) {
+        ctx.drawImage(this.current, this.position.x, this.position.y, this.width, this.height);
       } else {
-        // фолбэк: белый круг игрока
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.arc(m.x, m.y, 20, 0, Math.PI * 2);
@@ -131,13 +86,11 @@
     }
     shootAnim() {
       this.current = this.sprite.shoot;
-      this.frame = 0;
       setTimeout(() => {
         this.current = this.sprite.reload;
-        this.frame = 0;
         setTimeout(() => {
           this.current = this.sprite.stand;
-        }, 600);
+        }, 500);
       }, 300);
     }
   }
@@ -152,16 +105,16 @@
       this.height = 3;
     }
     draw() {
-      if (this.image && this.image.complete) {
-        ctx.save();
-        ctx.translate(this.position.x, this.position.y);
-        ctx.rotate(this.rotation);
-        ctx.drawImage(this.image, 0, 0, 30, 8, -this.width / 2, -this.height / 2, this.width, this.height);
-        ctx.restore();
+      ctx.save();
+      ctx.translate(this.position.x, this.position.y);
+      ctx.rotate(this.rotation);
+      if (this.image) {
+        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
       } else {
         ctx.fillStyle = 'yellow';
-        ctx.fillRect(this.position.x - 3, this.position.y - 2, 6, 4);
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
       }
+      ctx.restore();
     }
     update() {
       this.position.x += this.velocity.x;
@@ -178,41 +131,26 @@
       this.rotation = rot;
       this.width = 85;
       this.height = 50;
-      this.frame = 0;
     }
     draw() {
-      if (this.image && this.image.complete) {
-        ctx.save();
-        ctx.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
-        ctx.rotate(this.rotation);
-        ctx.drawImage(
-          this.image,
-          (this.frame * 256) + 95,
-          100,
-          this.width,
-          this.height,
-          -this.width / 2,
-          -this.height / 2,
-          this.width,
-          this.height
-        );
-        ctx.restore();
+      ctx.save();
+      ctx.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
+      ctx.rotate(this.rotation);
+      if (this.image) {
+        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
       } else {
-        // фолбэк — красный прямоугольник
         ctx.fillStyle = 'red';
-        ctx.fillRect(this.position.x, this.position.y, 30, 30);
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
       }
+      ctx.restore();
     }
     update() {
-      this.frame = (this.frame + 1) % 32;
       this.position.x += this.velocity.x;
       this.position.y += this.velocity.y;
       this.draw();
     }
   }
 
-  // частицы — простой круг
-  const friction = 0.98;
   class Particle {
     constructor(x, y, r, color, vel) {
       this.x = x; this.y = y; this.radius = r; this.color = color; this.velocity = vel; this.alpha = 1;
@@ -227,8 +165,8 @@
       ctx.restore();
     }
     update() {
-      this.velocity.x *= friction;
-      this.velocity.y *= friction;
+      this.velocity.x *= 0.98;
+      this.velocity.y *= 0.98;
       this.x += this.velocity.x;
       this.y += this.velocity.y;
       this.alpha -= 0.01;
@@ -236,33 +174,15 @@
     }
   }
 
-  // ----- прелоад ресурсов -----
-  async function preloadAll() {
-    const imgEntries = Object.entries(resources.images);
-    const audEntries = Object.entries(resources.audios);
-
-    const imgPromises = imgEntries.map(([key, src]) => loadImage(src).then(res => ({ key, res })));
-    const audPromises = audEntries.map(([key, src]) => loadAudio(src).then(res => ({ key, res })));
-
-    const imgResults = await Promise.all(imgPromises);
-    imgResults.forEach(({ key, res }) => {
-      preloaded.images[key] = res.ok ? res.img : null;
-      if (!res.ok) imagesOk = false;
-    });
-
-    const audResults = await Promise.all(audPromises);
-    audResults.forEach(({ key, res }) => {
-      preloaded.audios[key] = res.ok ? res.audio : null;
-    });
-
-    // лог результата прелоада
-    console.info('Прелоад завершён. imagesOk=', imagesOk);
+  async function preload() {
+    for (const [key, src] of Object.entries(resources)) {
+      preloaded[key] = await loadImage(src);
+    }
   }
 
-  // ----- инициализация игры -----
-  function initGame() {
+  function init() {
     resizeCanvas();
-    player = new Player(preloaded.images);
+    player = new Player(preloaded);
     bullets = [];
     enemies = [];
     particles = [];
@@ -271,37 +191,31 @@
     if (resultScreen) resultScreen.style.display = 'none';
   }
 
-  // ----- спавн врагов -----
-  let spawnInterval = null;
   function spawnEnemies() {
     spawnInterval = setInterval(() => {
-      const position = { x: 0, y: 0 };
+      const pos = { x: 0, y: 0 };
       if (Math.random() < 0.5) {
-        position.x = Math.random() < 0.5 ? -256 : canvas.clientWidth + 85;
-        position.y = Math.random() * canvas.clientHeight;
+        pos.x = Math.random() < 0.5 ? -256 : canvas.clientWidth + 85;
+        pos.y = Math.random() * canvas.clientHeight;
       } else {
-        position.x = Math.random() * canvas.clientWidth;
-        position.y = Math.random() < 0.5 ? -256 : canvas.clientHeight + 50;
+        pos.x = Math.random() * canvas.clientWidth;
+        pos.y = Math.random() < 0.5 ? -256 : canvas.clientHeight + 50;
       }
-      const angle = Math.atan2(player.position.y - position.y, player.position.x - position.x);
+      const angle = Math.atan2(player.position.y - pos.y, player.position.x - pos.x);
       const velocity = { x: Math.cos(angle) * 0.6, y: Math.sin(angle) * 0.6 };
-      enemies.push(new Enemy(position, velocity, angle, preloaded.images.zombieWalk));
+      enemies.push(new Enemy(pos, velocity, angle, preloaded.zombieWalk));
     }, 1000);
   }
 
-  // ----- основная анимация -----
   function animate() {
     animationId = requestAnimationFrame(animate);
 
-    // фон: если есть grass — рисуем как паттерн (необходимо, чтобы было загружено)
-    if (preloaded.images.grass && preloaded.images.grass.complete) {
-      // делаем плитку/растяжение — тут упрощённо: drawImage на полный canvas
-      ctx.drawImage(preloaded.images.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
-      // затем затемняем
+    // фон
+    if (preloaded.grass) {
+      ctx.drawImage(preloaded.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     } else {
-      // если нет — просто черный фон
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
@@ -315,33 +229,31 @@
 
     bullets.forEach((b, i) => {
       b.update();
-      if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 ||
-          b.position.x < -50 || b.position.y < -50) {
+      if (
+        b.position.x > canvas.clientWidth + 50 ||
+        b.position.y > canvas.clientHeight + 50 ||
+        b.position.x < -50 ||
+        b.position.y < -50
+      ) {
         bullets.splice(i, 1);
       }
     });
 
-    enemies.forEach((enemy, eIndex) => {
+    enemies.forEach((enemy, ei) => {
       enemy.update();
-
       const m = mid();
-      const enemyCenterX = enemy.position.x + (enemy.width - enemy.height);
-      const enemyCenterY = enemy.position.y + enemy.height / 2;
-      const distToPlayer = Math.hypot(m.x - enemyCenterX, m.y - enemyCenterY);
-      if (distToPlayer < 40) {
-        if (animationId) cancelAnimationFrame(animationId);
-        if (spawnInterval) clearInterval(spawnInterval);
-        if (resultScreen) {
-          resultScreen.style.display = 'flex';
-        } else {
-          console.log('Game over — result screen not found in DOM');
-        }
+      const dx = m.x - (enemy.position.x + enemy.width / 2);
+      const dy = m.y - (enemy.position.y + enemy.height / 2);
+      const dist = Math.hypot(dx, dy);
+      if (dist < 40) {
+        cancelAnimationFrame(animationId);
+        clearInterval(spawnInterval);
+        resultScreen.style.display = 'flex';
       }
 
-      bullets.forEach((bullet, bIndex) => {
-        const dist = Math.hypot(bullet.position.x - enemy.position.x, bullet.position.y - enemy.position.y);
-        if (dist < 30) {
-          // частицы
+      bullets.forEach((bullet, bi) => {
+        const d = Math.hypot(bullet.position.x - enemy.position.x, bullet.position.y - enemy.position.y);
+        if (d < 30) {
           for (let i = 0; i < 12; i++) {
             particles.push(new Particle(
               bullet.position.x,
@@ -351,17 +263,15 @@
               { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
             ));
           }
-          if (preloaded.audios.kill) { preloaded.audios.kill.currentTime = 0; preloaded.audios.kill.play().catch(()=>{}); }
-          enemies.splice(eIndex, 1);
-          bullets.splice(bIndex, 1);
+          enemies.splice(ei, 1);
+          bullets.splice(bi, 1);
           score += 100;
-          if (scoreDisplay) scoreDisplay.textContent = score;
+          scoreDisplay.textContent = score;
         }
       });
     });
   }
 
-  // ----- обработчики ввода -----
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const cx = rect.left + canvas.clientWidth / 2;
@@ -372,9 +282,8 @@
       x: cx - rect.left + 40 * Math.cos(angle),
       y: cy - rect.top + 40 * Math.sin(angle)
     };
-    bullets.push(new Bullet(position, velocity, angle, preloaded.images.projectile));
+    bullets.push(new Bullet(position, velocity, angle, preloaded.projectile));
     player.shootAnim();
-    if (preloaded.audios.shoot) { preloaded.audios.shoot.currentTime = 0; preloaded.audios.shoot.play().catch(()=>{}); }
   });
 
   window.addEventListener('mousemove', (event) => {
@@ -385,41 +294,20 @@
     if (player) player.rotation = angle;
   });
 
-  // старт и прелоад
-  async function setupAndBind() {
-    await preloadAll();
-
-    // если кнопка есть — запуск по ней, иначе стартим сразу
+  async function setup() {
+    await preload();
     if (startBtn) {
       startBtn.addEventListener('click', () => {
-        initGame();
+        init();
         animate();
         spawnEnemies();
-        if (preloaded.audios.background) {
-          preloaded.audios.background.loop = true;
-          preloaded.audios.background.volume = 0.08;
-          preloaded.audios.background.play().catch(()=>{});
-        }
       });
     } else {
-      // автозапуск если нет кнопки
-      initGame();
+      init();
       animate();
       spawnEnemies();
     }
   }
 
-  // запустить конфигурацию
-  setupAndBind().catch(err => console.error('Ошибка setup:', err));
-
-  // ----- небольшая вспомогательная команда разработчику -----
-  // Если хочешь принудительно увидеть тест (без картинок) — вызови window.__GAME_TEST()
-  window.__GAME_TEST = function() {
-    initGame();
-    // заменим ресурсы на null, чтобы сработал фолбэк
-    Object.keys(preloaded.images).forEach(k => preloaded.images[k] = null);
-    animate();
-    spawnEnemies();
-  };
-
+  setup();
 })();
