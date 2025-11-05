@@ -1,421 +1,214 @@
-const scoreElements = document.querySelectorAll(".score-num");
-const startGame = document.querySelector(".start-game-btn");
-const result = document.querySelector(".result");
-const soundPlay = document.querySelector(".sound-btn");
-const soundmuted = document.querySelector(".muted-btn");
+const canvas = document.querySelector('.canvas');
+const ctx = canvas.getContext('2d');
 
-const canvas = document.querySelector(".canvas");
+const startBtn = document.querySelector('.start-game-btn');
+const resultScreen = document.querySelector('.result');
+const scoreDisplay = document.querySelector('.score');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+let player, bullets, enemies, particles;
+let animationId, score;
 
-const midX = canvas.width / 2;
-const midY = canvas.height / 2;
-const context = canvas.getContext("2d");
-
-function createAudio(path) {
-    const audio = new Audio();
-    audio.src = path;
-    audio.loop = path.includes("background"); 
-    return audio;
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 
-const backgroundSound = createAudio("audio/backgroundSound.mp3"); 
-const shoot = createAudio("audio/shot-and-reload.mp3");
-const killingZombie = createAudio("audio/killed_zombie.mp3");
-const boomSound = createAudio("audio/boom.mp3");
-let muted = false;
-
-function createImage(path) {
-    const img = new Image();
-    img.src = path.replace("photos/", "img/"); 
-    return img;
-}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 class Player {
-    constructor() {
-        this.width = 100;
-        this.height = 100;
-        this.position = {
-            x: midX - this.width / 2,
-            y: midY - this.height / 2,
-        };
-        this.sprite = {
-            stand: {
-                spriteNum: 1,
-                image: createImage("img/playerSpriteIdle.png"),
-                cropWidth: 313,
-                height: 207,
-            },
-            reload: {
-                spriteNum: 3,
-                image: createImage("img/playerSpriteReload.png"),
-                cropWidth: 322,
-                height: 217,
-            },
-            shoot: {
-                spriteNum: 4,
-                image: createImage("img/playerSpriteShoot.png"),
-                cropWidth: 312,
-                height: 206,
-            },
-        };
-        this.currentSpriteNum = 1;
-        this.currentSprite = this.sprite.stand.image;
-        this.currentCropWidth = this.sprite.stand.cropWidth;
-        this.currentHeight = this.sprite.stand.height;
-        this.frame = 0;
-        this.rotation = 0;
+    constructor(x, y, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
     }
-
     draw() {
-        context.beginPath(); 
-        context.save();
-        context.translate(midX - 15, midY); 
-        context.rotate(this.rotation);
-        context.translate(-midX + 15, -midY);
-        context.drawImage(
-            this.currentSprite,
-            this.currentCropWidth * this.frame,
-            0,
-            this.currentCropWidth,
-            this.currentHeight,
-            this.position.x,
-            this.position.y,
-            this.width,
-            this.height
-        );
-        context.restore();
-        context.closePath(); 
-    }
-
-    update() {
-        if (this.frame >= 0 && this.currentSpriteNum === this.sprite.shoot.spriteNum) {
-            this.currentSpriteNum = this.sprite.reload.spriteNum;
-            this.currentSprite = this.sprite.reload.image;
-            this.currentCropWidth = this.sprite.reload.cropWidth;
-            this.currentHeight = this.sprite.reload.height;
-            this.frame = 0;
-        } else if (this.frame >= 19) {
-            if (this.currentSpriteNum === this.sprite.reload.spriteNum) {
-                this.currentSpriteNum = this.sprite.stand.spriteNum;
-                this.currentSprite = this.sprite.stand.image;
-                this.currentCropWidth = this.sprite.stand.cropWidth;
-                this.currentHeight = this.sprite.stand.height;
-            }
-            this.frame = 0;
-        } else {
-            this.frame++;
-        }
-        this.draw();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
     }
 }
 
-class Projectiles {
-    constructor(position, velocity, rotation) {
-        this.width = 12;
-        this.height = 3;
-        this.image = createImage("img/projectile.png"); 
-        this.position = position;
+class Bullet {
+    constructor(x, y, radius, color, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
         this.velocity = velocity;
-        this.rotation = rotation;
     }
-
-    draw() {
-        context.beginPath(); 
-        context.save();
-        
-        // 1. Перенос контекста в центр пули
-        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2); 
-        
-        // 2. Вращение
-        context.rotate(this.rotation);
-        
-        // 3. Рисование относительно нового (0,0)
-        context.drawImage(
-            this.image, 
-            0, 0, 30, 8, 
-            -this.width / 2, 
-            -this.height / 2, 
-            this.width, this.height 
-        );
-        
-        context.restore();
-        context.closePath(); 
-    }
-
     update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
         this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
     }
 }
 
 class Enemy {
-    constructor(position, velocity, rotation) {
-        this.image = createImage("img/zombieSpritewalk.png"); 
-        this.width = 85;
-        this.height = 50;
-        this.position = position;
+    constructor(x, y, radius, color, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
         this.velocity = velocity;
-        this.rotation = rotation;
-        this.frame = 0;
     }
-
-    draw() {
-        this.radius = 15;
-        this.cirX = this.position.x + (this.width - this.height);
-        this.cirY = this.position.y + this.height / 2;
-
-        context.beginPath(); 
-        context.save();
-        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
-        context.rotate(this.rotation);
-        context.translate(-this.position.x - this.width / 2, -this.position.y - this.height / 2); 
-
-        context.drawImage(
-            this.image,
-            (this.frame * 256) + 95,
-            100,
-            this.width,
-            this.height,
-            this.position.x,
-            this.position.y,
-            this.width,
-            this.height
-        );
-        context.restore();
-        context.closePath(); 
-    }
-
     update() {
-        if (this.frame >= 31) {
-            this.frame = 0;
-        } else {
-            this.frame++; 
-        }
-        
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
         this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
     }
 }
 
-const friction = 0.98;
 class Particle {
     constructor(x, y, radius, color, velocity) {
-        this.position = { x, y };
+        this.x = x;
+        this.y = y;
         this.radius = radius;
         this.color = color;
         this.velocity = velocity;
         this.alpha = 1;
     }
-
-    draw() {
-        context.beginPath(); 
-        context.save();
-        context.globalAlpha = this.alpha;
-        context.fillStyle = this.color;
-        context.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-        context.fill();
-        context.restore();
-        context.closePath(); 
-    }
-
     update() {
-        this.draw();
-        this.velocity.x *= friction;
-        this.velocity.y *= friction;
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+        this.velocity.x *= 0.98;
+        this.velocity.y *= 0.98;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
         this.alpha -= 0.01;
+        this.draw();
     }
-}
-
-let player;
-let projectiles = [];
-let enemies = [];
-let particles = [];
-let animateID;
-let score = 0;
-
-function spawnEnemies() {
-    setInterval(() => {
-        const position = { x: 0, y: 0 };
-        if (Math.random() < 0.5) {
-            position.x = Math.random() < 0.5 ? -256 : canvas.width + 85;
-            position.y = Math.random() * canvas.height;
-        } else {
-            position.x = Math.random() * canvas.width;
-            position.y = Math.random() < 0.5 ? -256 : canvas.height + 50;
-        }
-
-        // ИСПРАВЛЕНИЕ: Целимся в центр канваса (midX, midY)
-        const angle = Math.atan2(midY - position.y, midX - position.x);
-        const velocity = { x: Math.cos(angle) * 0.5, y: Math.sin(angle) * 0.5 };
-        enemies.push(new Enemy(position, velocity, angle));
-    }, 1000);
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+    }
 }
 
 function initGame() {
-    player = new Player();
-    projectiles = [];
+    player = new Player(canvas.width / 2, canvas.height / 2, 20, 'white');
+    bullets = [];
     enemies = [];
     particles = [];
     score = 0;
-    scoreElements.forEach(s => (s.innerHTML = score));
+    scoreDisplay.textContent = score;
+    resultScreen.style.display = 'none';
+}
 
-    backgroundSound.currentTime = 0; 
-    backgroundSound.play();
-    backgroundSound.volume = muted ? 0 : 0.1;
-
-    animate();
-    spawnEnemies();
+function spawnEnemies() {
+    setInterval(() => {
+        const radius = Math.random() * 30 + 10;
+        let x, y;
+        if (Math.random() < 0.5) {
+            x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
+            y = Math.random() * canvas.height;
+        } else {
+            x = Math.random() * canvas.width;
+            y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
+        }
+        const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
+        const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
+        const velocity = {
+            x: Math.cos(angle) * 1.5,
+            y: Math.sin(angle) * 1.5
+        };
+        enemies.push(new Enemy(x, y, radius, color, velocity));
+    }, 1000);
 }
 
 function animate() {
-    animateID = requestAnimationFrame(animate);
-    context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    backgroundSound.volume = muted ? 0 : 0.1; 
-
-    player.update();
-
-    particles = particles.filter(p => p.alpha > 0);
-    particles.forEach(p => p.update());
-    
-    projectiles.forEach((p, i) => {
-        p.update();
-        if (p.position.x > canvas.width || p.position.y > canvas.height || p.position.x < 0 || p.position.y < 0) {
-            setTimeout(() => projectiles.splice(i, 1));
+    animationId = requestAnimationFrame(animate);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    player.draw();
+    particles.forEach((particle, index) => {
+        if (particle.alpha <= 0) {
+            particles.splice(index, 1);
+        } else {
+            particle.update();
         }
     });
-
-    enemies.forEach(e => e.update());
-
-    enemies.forEach((enemy, enemyIndex) => {
-        const disPlayer = Math.hypot((midX - 10) - enemy.cirX, (midY + 10) - enemy.cirY);
-        if (disPlayer - enemy.radius - 20 < 1) { 
-            if (!muted) {
-                const zombieEat = createAudio("audio/zombieEat.mp3");
-                zombieEat.play();
-                backgroundSound.pause();
-            }
-            cancelAnimationFrame(animateID);
-            scoreElements[1].innerHTML = score;
-            canvas.style.display = "none";
-            result.style.display = "block";
+    bullets.forEach((bullet, index) => {
+        bullet.update();
+        if (
+            bullet.x + bullet.radius < 0 ||
+            bullet.x - bullet.radius > canvas.width ||
+            bullet.y + bullet.radius < 0 ||
+            bullet.y - bullet.radius > canvas.height
+        ) {
+            bullets.splice(index, 1);
         }
-
-        projectiles.forEach((projectile, projectileIndex) => {
-            const disProjectile = Math.hypot(projectile.position.x + 2 - enemy.cirX, projectile.position.y + 2 - enemy.cirY);
-            if (disProjectile - enemy.radius - 6 < 1) {
-                if (!muted) {
-                    shoot.pause(); 
-                    shoot.currentTime = 0; 
-                    killingZombie.play();
-                }
-
-                for (let i = 0; i < 15; i++) {
+    });
+    enemies.forEach((enemy, enemyIndex) => {
+        enemy.update();
+        const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+        if (dist - enemy.radius - player.radius < 1) {
+            cancelAnimationFrame(animationId);
+            resultScreen.style.display = 'flex';
+        }
+        bullets.forEach((bullet, bulletIndex) => {
+            const dist = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
+            if (dist - enemy.radius - bullet.radius < 1) {
+                for (let i = 0; i < enemy.radius * 2; i++) {
                     particles.push(
                         new Particle(
-                            enemy.position.x + enemy.width / 2,
-                            enemy.position.y + enemy.height / 2,
-                            Math.random() * 3,
-                            "red",
-                            { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
+                            bullet.x,
+                            bullet.y,
+                            Math.random() * 2,
+                            enemy.color,
+                            {
+                                x: (Math.random() - 0.5) * (Math.random() * 6),
+                                y: (Math.random() - 0.5) * (Math.random() * 6)
+                            }
                         )
                     );
                 }
-                
-                setTimeout(() => {
+                if (enemy.radius - 10 > 10) {
+                    score += 100;
+                    scoreDisplay.textContent = score;
+                    enemy.radius -= 10;
+                    bullets.splice(bulletIndex, 1);
+                } else {
+                    score += 250;
+                    scoreDisplay.textContent = score;
                     enemies.splice(enemyIndex, 1);
-                    projectiles.splice(projectileIndex, 1);
-                });
-                
-                score += 100;
-                scoreElements[0].innerHTML = score;
+                    bullets.splice(bulletIndex, 1);
+                }
             }
         });
     });
 }
 
-canvas.addEventListener("click", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
-    const velocity = { x: Math.cos(angle) * 5, y: Math.sin(angle) * 5 };
-    
-    let position = { x: midX - 15, y: midY };
-    
-    position.x += 40 * Math.cos(angle) - 20 * Math.sin(angle);
-    position.y += 40 * Math.sin(angle) + 20 * Math.cos(angle);
-    
-    projectiles.push(new Projectiles(position, velocity, angle));
-
-    player.currentSpriteNum = player.sprite.shoot.spriteNum;
-    player.currentSprite = player.sprite.shoot.image;
-    player.currentCropWidth = player.sprite.shoot.cropWidth;
-    player.currentHeight = player.sprite.shoot.height;
-    player.frame = 0; 
-
-    if (!muted) {
-        shoot.playbackRate = 2;
-        shoot.volume = 0.5;
-        shoot.currentTime = 0; 
-        shoot.play();
-    }
+canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const angle = Math.atan2(y - player.y, x - player.x);
+    const velocity = {
+        x: Math.cos(angle) * 6,
+        y: Math.sin(angle) * 6
+    };
+    bullets.push(new Bullet(player.x, player.y, 5, 'white', velocity));
 });
 
-document.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-    if (score >= 5000) {
-        score += enemies.length * 100 - 5000;
-        scoreElements[0].innerHTML = score;
-
-        enemies.forEach((enemy) => {
-            for (let i = 0; i < 15; i++) {
-                particles.push(
-                    new Particle(
-                        enemy.position.x + enemy.width / 2,
-                        enemy.position.y + enemy.height / 2,
-                        Math.random() * 3,
-                        "red",
-                        { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
-                    )
-                );
-            }
-        });
-        enemies = []; 
-        
-        if (!muted) {
-            boomSound.currentTime = 0;
-            boomSound.volume = 0.2;
-            boomSound.play();
-        }
-    }
-});
-
-window.addEventListener("mousemove", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
-    player.rotation = angle;
-});
-
-startGame.addEventListener("click", () => {
-    result.style.display = "none";
-    canvas.style.display = "block";
+startBtn.addEventListener('click', () => {
     initGame();
+    animate();
+    spawnEnemies();
 });
-
-if (soundPlay && soundmuted) { 
-    soundPlay.addEventListener("click", () => {
-        muted = true;
-        soundPlay.style.display = "none";
-        soundmuted.style.display = "block";
-    });
-
-    soundmuted.addEventListener("click", () => {
-        muted = false;
-        soundmuted.style.display = "none";
-        soundPlay.style.display = "block";
-    });
-}
