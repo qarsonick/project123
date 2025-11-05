@@ -1,4 +1,4 @@
-/* 🔹 Универсальный сброс и адаптивное масштабирование */
+/* Скидання стилів */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -11,77 +11,41 @@ html, body {
     overflow: hidden;
 }
 
-/* 🔹 Фон — если нет photos/grass.jpg, будет чёрный */
+/* Фон */
 body {
-    background: url('photos/grass.jpg') center/cover no-repeat, black;
+    background: url('photos/grass.jpg') center/cover no-repeat;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: Arial, sans-serif;
 }
 
-/* 🔹 Основной контейнер — горизонтальный экран */
+/* Основний контейнер — трохи менше ніж 16:9 */
 .desktop-container {
-    width: 100vw;
-    max-width: 1600px;
-    aspect-ratio: 16 / 9;
-    background-color: #2f3c2a;
+    width: 88vw;
+    max-width: 1300px;
+    aspect-ratio: 14 / 9; /* трохи нижче за 16:9 */
+    background-color: #43513b;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-/* 🔹 Навигация */
-.nav-bar {
-    background-color: #ffffff;
-    padding: 0.6em;
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-}
-
-.nav-bar a {
-    color: #2a3328;
-    text-decoration: none;
-    padding: 0.4em 0.8em;
-    font-size: clamp(12px, 2vw, 16px);
-    transition: 0.2s;
-}
-
-.nav-bar a:hover {
-    background-color: #ddd;
-    border-radius: 6px;
-}
-
-.nav-bar .active {
-    background-color: #cccccc;
-    border-radius: 6px;
-}
-
-/* 🔹 Верхняя и нижняя полосы */
-.header-line,
-.footer-line {
-    height: 8vh;
-    line-height: 8vh;
-    text-align: center;
-    font-size: clamp(16px, 2.5vw, 22px);
-    font-weight: bold;
-}
-
+/* Верхня смуга */
 .header-line {
     background-color: #ffffff;
     color: #2a3328;
+    height: 7vh;
+    line-height: 7vh;
+    text-align: center;
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: bold;
 }
 
-.footer-line {
-    background-color: #2a3328;
-    color: #ffffff;
-}
-
-/* 🔹 Игровое окно */
+/* Ігрове вікно */
 .game-wrapper {
     flex: 1;
     position: relative;
@@ -91,32 +55,29 @@ body {
     align-items: center;
 }
 
-/* 🔹 Canvas — шире экрана */
+/* Canvas */
 .canvas {
-    width: 150vw;  /* стало шире */
-    height: 100vh;
+    width: 160%; /* робимо поле ширше */
+    height: 110%;
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     display: none;
-    background: rgba(0, 0, 0, 0.2);
 }
 
-/* 🔹 Очки */
+/* Очки */
 .score {
     position: absolute;
     top: 1.5vh;
     left: 1.5vw;
     color: white;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(14px, 2vw, 22px);
+    font-size: clamp(14px, 2vw, 20px);
     user-select: none;
     z-index: 2;
-    text-shadow: 0 0 8px rgba(0,0,0,0.6);
 }
 
-/* 🔹 Экран результата */
+/* Екран результату */
 .result {
     width: 80%;
     position: absolute;
@@ -130,27 +91,24 @@ body {
 .result .content {
     background-color: white;
     padding: 2em;
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 0 25px rgba(0,0,0,0.5);
 }
 
 .content h2 {
-    font-size: clamp(28px, 6vw, 48px);
+    font-size: clamp(28px, 6vw, 50px);
     font-weight: 700;
-    color: #2a3328;
 }
 
 .content p {
-    color: #555;
+    color: #777;
     font-size: clamp(16px, 3vw, 24px);
     margin: 1em 0;
 }
 
-/* 🔹 Кнопки */
 .content .btn button,
 .start-game-btn {
     display: inline-block;
@@ -159,24 +117,24 @@ body {
     border-radius: 30px;
     background-color: rgb(0, 119, 255);
     color: white;
-    font-size: clamp(16px, 3vw, 28px);
+    font-size: clamp(16px, 3vw, 30px);
     border: none;
     outline: none;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color 0.3s;
 }
 
 .content .btn button:hover,
 .start-game-btn:hover {
     background-color: rgb(0, 90, 190);
-    transform: scale(1.05);
 }
 
-/* 🔹 Нижний футер */
-.footer {
+/* Нижня смуга */
+.footer-line {
     background-color: #2a3328;
     color: #ffffff;
-    padding: 0.8em;
-    font-size: clamp(10px, 2vw, 14px);
+    height: 6vh;
+    line-height: 6vh;
     text-align: center;
+    font-size: clamp(12px, 2vw, 16px);
 }
