@@ -1,331 +1,254 @@
-const scoreElements = document.querySelectorAll(".score-num");
-const startGame = document.querySelector(".start-game-btn");
-const result = document.querySelector(".result");
+const canvas = document.querySelector('.canvas');
+const ctx = canvas.getContext('2d');
 
-const canvas = document.querySelector(".canvas");
-const context = canvas.getContext("2d");
+const startBtn = document.querySelector('.start-game-btn');
+const resultScreen = document.querySelector('.result');
+const scoreDisplay = document.querySelector('.score');
 
+let player, bullets, enemies, particles;
+let animationId, score;
+
+// ---------- Налаштування полотна ----------
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    midX = canvas.width / 2;
-    midY = canvas.height / 2;
 }
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let midX = canvas.width / 2;
-let midY = canvas.height / 2;
+// ---------- Завантаження зображень ----------
+const images = {
+    playerIdle: new Image(),
+    playerMove: new Image(),
+    playerShoot: new Image(),
+    zombieWalk: new Image(),
+    zombieRun: new Image(),
+    bullet: new Image()
+};
 
+images.playerIdle.src = 'img/playerSpriteIdle.png';
+images.playerMove.src = 'img/playerSpriteMove.png';
+images.playerShoot.src = 'img/playerSpriteShoot.png';
+images.zombieWalk.src = 'img/zombieSpritewalk.png';
+images.zombieRun.src = 'img/zombieSpriterun.png';
+images.bullet.src = 'img/пуля.png';
+
+// ---------- Класи ----------
 class Player {
-    constructor() {
-        this.width = 100;
-        this.height = 100;
-        this.position = { x: midX - this.width / 2, y: midY - this.height / 2 };
-        this.sprite = {
-            stand: {
-                spriteNum: 1,
-                image: createImage("img/playerSpriteIdle.png"),
-                cropWidth: 313,
-                height: 207,
-            },
-            move: {
-                spriteNum: 2,
-                image: createImage("img/playerSpriteMove.png"),
-                cropWidth: 313,
-                height: 206,
-            },
-            reload: {
-                spriteNum: 3,
-                image: createImage("img/playerSpriteReload.png"),
-                cropWidth: 322,
-                height: 217,
-            },
-            shoot: {
-                spriteNum: 4,
-                image: createImage("img/playerSpriteShoot.png"),
-                cropWidth: 312,
-                height: 206,
-            }
-        };
-        this.currentSpriteNum = 1;
-        this.currentSprite = this.sprite.stand.image;
-        this.currentCropWidth = this.sprite.stand.cropWidth;
-        this.currentHeight = this.sprite.stand.height;
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 80;
+        this.height = 80;
         this.frame = 0;
-        this.rotation = 0;
+        this.frameCount = 4;
+        this.frameDelay = 8;
+        this.frameTimer = 0;
+        this.state = 'idle'; // 'idle' | 'move' | 'shoot'
+    }
+
+    update() {
+        this.frameTimer++;
+        if (this.frameTimer >= this.frameDelay) {
+            this.frame = (this.frame + 1) % this.frameCount;
+            this.frameTimer = 0;
+        }
     }
 
     draw() {
-        context.beginPath();
-        context.save();
-        context.translate(midX - 15, midY);
-        context.rotate(this.rotation);
-        context.translate(-midX + 15, -midY);
-        context.drawImage(
-            this.currentSprite,
-            this.currentCropWidth * this.frame,
+        let img;
+        if (this.state === 'shoot') img = images.playerShoot;
+        else if (this.state === 'move') img = images.playerMove;
+        else img = images.playerIdle;
+
+        ctx.drawImage(
+            img,
+            this.frame * this.width,
             0,
-            this.currentCropWidth,
-            this.currentHeight,
-            this.position.x,
-            this.position.y,
+            this.width,
+            this.height,
+            this.x - this.width / 2,
+            this.y - this.height / 2,
             this.width,
             this.height
         );
-        context.restore();
-        context.closePath();
-    }
-
-    update() {
-        if (this.frame >= 0 && this.currentSpriteNum === this.sprite.shoot.spriteNum) {
-            this.currentSpriteNum = this.sprite.reload.spriteNum;
-            this.currentSprite = this.sprite.reload.image;
-            this.currentCropWidth = this.sprite.reload.cropWidth;
-            this.currentHeight = this.sprite.reload.height;
-            this.frame = 0;
-        } else if (this.frame >= 19) {
-            if (this.currentSpriteNum === this.sprite.reload.spriteNum) {
-                this.currentSpriteNum = this.sprite.stand.spriteNum;
-                this.currentSprite = this.sprite.stand.image;
-                this.currentCropWidth = this.sprite.stand.cropWidth;
-                this.currentHeight = this.sprite.stand.height;
-            }
-            this.frame = 0;
-        } else {
-            this.frame++;
-        }
-        this.draw();
     }
 }
 
-class Projectiles {
-    constructor(position, velocity, rotation) {
-        this.width = 12;
-        this.height = 3;
-        this.image = createImage("img/projectile.png");
-        this.position = position;
+class Bullet {
+    constructor(x, y, velocity) {
+        this.x = x;
+        this.y = y;
         this.velocity = velocity;
-        this.rotation = rotation;
+        this.radius = 5;
     }
-
-    draw() {
-        context.beginPath();
-        context.save();
-        context.translate(this.position.x, this.position.y);
-        context.rotate(this.rotation);
-        context.translate(-this.position.x, -this.position.y);
-        context.drawImage(this.image, 0, 0, 30, 8, this.position.x, this.position.y, this.width, this.height);
-        context.restore();
-        context.closePath();
-    }
-
     update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
         this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
+    }
+    draw() {
+        ctx.drawImage(images.bullet, this.x - 10, this.y - 10, 20, 20);
     }
 }
 
 class Enemy {
-    constructor(position, velocity, rotation) {
-        this.image = createImage("img/zombieSpritewalk.png");
-        this.width = 85;
-        this.height = 50;
-        this.position = position;
-        this.velocity = velocity;
-        this.rotation = rotation;
+    constructor(x, y, speed) {
+        this.x = x;
+        this.y = y;
+        this.width = 70;
+        this.height = 70;
+        this.speed = speed;
         this.frame = 0;
+        this.frameCount = 6;
+        this.frameDelay = 8;
+        this.frameTimer = 0;
     }
+    update(playerX, playerY) {
+        const angle = Math.atan2(playerY - this.y, playerX - this.x);
+        this.x += Math.cos(angle) * this.speed;
+        this.y += Math.sin(angle) * this.speed;
 
+        this.frameTimer++;
+        if (this.frameTimer >= this.frameDelay) {
+            this.frame = (this.frame + 1) % this.frameCount;
+            this.frameTimer = 0;
+        }
+        this.draw();
+    }
     draw() {
-        this.radius = 15;
-        this.cirX = this.position.x + (this.width - this.height);
-        this.cirY = this.position.y + this.height / 2;
-        context.beginPath();
-        context.save();
-        context.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
-        context.rotate(this.rotation);
-        context.translate(-this.position.x - this.width / 2, -this.position.y - this.height / 2);
-        context.drawImage(
-            this.image,
-            (this.frame * 256) + 95,
-            100,
+        ctx.drawImage(
+            images.zombieRun,
+            this.frame * this.width,
+            0,
             this.width,
             this.height,
-            this.position.x,
-            this.position.y,
+            this.x - this.width / 2,
+            this.y - this.height / 2,
             this.width,
             this.height
         );
-        context.restore();
-        context.closePath();
-    }
-
-    update() {
-        if (this.frame >= 31) this.frame = 0;
-        else setTimeout(() => { this.frame++; }, 100);
-        this.draw();
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
     }
 }
 
-const friction = 0.98;
 class Particle {
-    constructor(x, y, radius, color, velocity) {
-        this.position = { x, y };
-        this.radius = radius;
-        this.color = color;
+    constructor(x, y, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = Math.random() * 3;
         this.velocity = velocity;
         this.alpha = 1;
     }
-
-    draw() {
-        context.beginPath();
-        context.save();
-        context.globalAlpha = this.alpha;
-        context.fillStyle = this.color;
-        context.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
-        context.fill();
-        context.restore();
-        context.closePath();
-    }
-
     update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.02;
         this.draw();
-        this.velocity.x *= friction;
-        this.velocity.y *= friction;
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
-        this.alpha -= 0.01;
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+        ctx.restore();
     }
 }
 
-function createImage(path) {
-    const img = new Image();
-    img.src = path;
-    return img;
-}
-
-let player, projectiles, enemies, particles, animateID, score;
-
-function spawnEnemies() {
-    setInterval(() => {
-        const position = { x: 0, y: 0 };
-        if (Math.random() < 0.5) {
-            position.x = Math.random() < 0.5 ? -256 : canvas.width + 85;
-            position.y = Math.random() * canvas.height;
-        } else {
-            position.x = Math.random() * canvas.width;
-            position.y = Math.random() < 0.5 ? -256 : canvas.height + 50;
-        }
-
-        const angle = Math.atan2(player.position.y - position.y, player.position.x - position.x);
-        const velocity = { x: Math.cos(angle) * 0.5, y: Math.sin(angle) * 0.5 };
-        enemies.push(new Enemy(position, velocity, angle));
-    }, 1000);
-}
-
+// ---------- Ініціалізація ----------
 function initGame() {
-    player = new Player();
-    projectiles = [];
+    player = new Player(canvas.width / 2, canvas.height / 2);
+    bullets = [];
     enemies = [];
     particles = [];
     score = 0;
-    scoreElements.forEach(el => el.innerHTML = score);
+    scoreDisplay.textContent = score;
+    resultScreen.style.display = 'none';
+}
+
+// ---------- Спавн ворогів ----------
+function spawnEnemies() {
+    setInterval(() => {
+        const side = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+        let x, y;
+        if (side === 'horizontal') {
+            x = Math.random() < 0.5 ? 0 : canvas.width;
+            y = Math.random() * canvas.height;
+        } else {
+            x = Math.random() * canvas.width;
+            y = Math.random() < 0.5 ? 0 : canvas.height;
+        }
+        enemies.push(new Enemy(x, y, 1.5 + Math.random()));
+    }, 1200);
+}
+
+// ---------- Анімація ----------
+function animate() {
+    animationId = requestAnimationFrame(animate);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    player.update();
+    player.draw();
+
+    particles.forEach((p, i) => {
+        if (p.alpha <= 0) particles.splice(i, 1);
+        else p.update();
+    });
+
+    bullets.forEach((b, i) => {
+        b.update();
+        if (
+            b.x < 0 || b.x > canvas.width ||
+            b.y < 0 || b.y > canvas.height
+        ) bullets.splice(i, 1);
+    });
+
+    enemies.forEach((e, ei) => {
+        e.update(player.x, player.y);
+        const dist = Math.hypot(player.x - e.x, player.y - e.y);
+        if (dist < 40) {
+            cancelAnimationFrame(animationId);
+            resultScreen.style.display = 'flex';
+        }
+
+        bullets.forEach((b, bi) => {
+            const dist = Math.hypot(b.x - e.x, b.y - e.y);
+            if (dist < 40) {
+                for (let i = 0; i < 8; i++) {
+                    particles.push(new Particle(b.x, b.y, {
+                        x: (Math.random() - 0.5) * 4,
+                        y: (Math.random() - 0.5) * 4
+                    }));
+                }
+                score += 100;
+                scoreDisplay.textContent = score;
+                enemies.splice(ei, 1);
+                bullets.splice(bi, 1);
+            }
+        });
+    });
+}
+
+// ---------- Стрільба ----------
+canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const angle = Math.atan2(y - player.y, x - player.x);
+    const velocity = {
+        x: Math.cos(angle) * 6,
+        y: Math.sin(angle) * 6
+    };
+    player.state = 'shoot';
+    setTimeout(() => player.state = 'idle', 200);
+    bullets.push(new Bullet(player.x, player.y, velocity));
+});
+
+// ---------- Кнопка старту ----------
+startBtn.addEventListener('click', () => {
+    initGame();
     animate();
     spawnEnemies();
-}
-
-function animate() {
-    animateID = requestAnimationFrame(animate);
-    context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    player.update();
-
-    particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
-    projectiles.forEach((p, i) => {
-        p.update();
-        if (p.position.x > canvas.width || p.position.y > canvas.height ||
-            p.position.x + p.width < 0 || p.position.y + p.height < 0) {
-            setTimeout(() => { projectiles.splice(i, 1); });
-        }
-    });
-    enemies.forEach(enemy => enemy.update());
-
-    enemies.forEach((enemy, enemyIndex) => {
-        const dis = Math.hypot((midX - 10) - enemy.cirX, (midY + 10) - enemy.cirY);
-        if (dis - enemy.radius - 20 < 1) {
-            cancelAnimationFrame(animateID);
-            scoreElements[1].innerHTML = score;
-            canvas.style.display = "none";
-            result.style.display = "block";
-        }
-
-        projectiles.forEach((projectile, projectileIndex) => {
-            const dis = Math.hypot(projectile.position.x + 2 - enemy.cirX, projectile.position.y + 2 - enemy.cirY);
-            if (dis - enemy.radius - 6 < 1) {
-                for (let i = 0; i < 15; i++) {
-                    particles.push(new Particle(
-                        enemy.position.x + enemy.width / 2,
-                        enemy.position.y + enemy.height / 2,
-                        Math.random() * 3,
-                        "red",
-                        { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
-                    ));
-                }
-                setTimeout(() => {
-                    enemies.splice(enemyIndex, 1);
-                    projectiles.splice(projectileIndex, 1);
-                });
-                score += 100;
-                scoreElements[0].innerHTML = score;
-            }
-        });
-    });
-}
-
-canvas.addEventListener("click", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
-    const velocity = { x: Math.cos(angle) * 5, y: Math.sin(angle) * 5 };
-    let position = { x: midX - 15, y: midY };
-    position.x += 40 * Math.cos(angle) - 20 * Math.sin(angle);
-    position.y += 40 * Math.sin(angle) + 20 * Math.cos(angle);
-    projectiles.push(new Projectiles(position, velocity, angle));
-    player.currentSpriteNum = player.sprite.shoot.spriteNum;
-    player.currentSprite = player.sprite.shoot.image;
-    player.currentCropWidth = player.sprite.shoot.cropWidth;
-    player.currentHeight = player.sprite.shoot.height;
-});
-
-document.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-    if (score >= 5000) {
-        score += enemies.length * 100 - 5000;
-        scoreElements[0].innerHTML = score;
-        enemies.forEach(enemy => {
-            for (let i = 0; i < 15; i++) {
-                particles.push(new Particle(
-                    enemy.position.x + enemy.width / 2,
-                    enemy.position.y + enemy.height / 2,
-                    Math.random() * 3,
-                    "red",
-                    { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }
-                ));
-            }
-        });
-        enemies = [];
-    }
-});
-
-window.addEventListener("mousemove", (event) => {
-    const angle = Math.atan2(event.clientY - midY, event.clientX - (midX - 15));
-    player.rotation = angle;
-});
-
-startGame.addEventListener("click", () => {
-    result.style.display = "none";
-    canvas.style.display = "block";
-    initGame();
 });
