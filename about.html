@@ -1,100 +1,83 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desktop - 3 | Описання гри</title>
-    <style>
-        body {
-            background-color: #242424;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-        }
-        .desktop-container {
-            width: 320px;
-            height: 540px;
-            background-color: #43513b;
-            margin: 20px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .header {
-            background-color: #2a3328;
-            color: white;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .nav-bar {
-            background-color: #ffffff;
-            padding: 5px 10px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .nav-bar a {
-            color: #2a3328;
-            text-decoration: none;
-            padding: 5px 8px;
-            font-size: 14px;
-        }
-        .nav-bar .active {
-            background-color: #cccccc;
-        }
-        .header-line {
-            background-color: #ffffff;
-            color: #2a3328;
-            padding: 5px 10px;
-            margin-top: -5px;
-            text-align: center;
-            font-size: 18px;
-        }
-        .content {
-            padding: 20px 10px;
-            color: #ffffff;
-            font-size: 14px;
-            flex-grow: 1;
-        }
-        .footer {
-            background-color: #2a3328;
-            color: #ffffff;
-            padding: 10px;
-            font-size: 12px;
-            text-align: center;
-        }
-        .footer-line {
-            color: #ffffff;
-            padding: 5px 10px;
-            margin-bottom: -5px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
+    <title>Описання гри</title>
+    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="normalize.css">
 
-<div class="desktop-container">
-    <div class="header">Desktop - 3</div>
-    <div class="nav-bar">
-        <a href="index.html">Головна сторінка</a>
-        <a href="history.html">Історія гри</a>
-        <a href="about.html" class="active">Описання гри</a>
-        <a href="game.html">Гра</a>
-    </div>
-    <div class="header-line">Zomdie</div>
-    
-    <div class="content">
-        <p>У цій грі тебе чекає справжній зомбі-апокаліпсис! Головний герой — Ванечкин, звичайний хлопець, який опинився серед зараженого лісу, де кожен крок може стати останнім. Озброївшись знайденими інструментами, він має вижити серед натовпів голодних зомбі.</p>
-    </div>
-    
-    <div class="footer-line">Контакти</div>
-    <div class="footer">
-        zomdieGame@gmail.com
-    </div>
-</div>
 
-</body>
+    <div class="desktop-container">
+        <div class="nav-bar">
+            <a href="index.html">Головна сторінка</a>
+            <a href="history.html">Історія гри</a>
+            <a href="about.html" class="active">Описання гри</a>
+            <a href="game.html">Гра</a>
+        </div>
+        <div class="header-line">Zomdie</div>
+
+        <div class="content">
+
+        </div>
+        <div class="card-grid content">
+
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-inner">
+                    <div class="card-face card-front one">
+                        <div>
+                            <h2>description</h2>
+                            <p>Натисни на цю карту і тобі відкриється описання про цю гру</p>
+                        </div>
+                        <p></p>
+                    </div>
+                    <div class="card-face card-back">
+                        <div>
+
+                            <ul class="features">
+                                <li>Zomdie — це динамічна 2D-гра у жанрі виживання під час зомбі-апокаліпсису.
+                                    Головний герой — Ванєчкін, звичайний хлопець, який опинився у темному лісі, де після
+                                    катастрофи ожили мертві. Його мета — вижити та знищити якомога більше зомбі.</li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+                <div class="card-inner">
+                    <div class="card-face card-front two">
+                        <div>
+                            <h2>description</h2>
+                            <p>Натисни на цю карту і тобі відкриється описання про цю гру</p>
+                        </div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div>
+                            <ul class="features">
+                                <li>Бігай по лісу, шукай зброю, ресурси та аптечки, відбивайся від натовпів заражених.
+                                    За кожного вбитого зомбі ти отримуєш гроші, які можна витратити на покращення зброї,
+                                    броні та здібностей.</li>
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="footer-line">Контакти</div>
+        <div class="footer">
+            zomdieGame@gmail.com
+        </div>
+    </div>
+    <script src="about.js"></script>
+    </body>
+
 </html>

@@ -1,0 +1,143 @@
+/* Скидання стилів */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Фон */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: url('photos/grass.jpg') center/150% no-repeat; 
+}
+
+/* Основний контейнер — трохи менше ніж 16:9 */
+.desktop-container {
+    width: 88vw;
+    max-width: 1300px;
+    aspect-ratio: 14 / 9; /* трохи нижче за 16:9 */
+    background-color: #43513b;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* Верхня смуга */
+.header-line {
+    background-color: #ffffff;
+    color: #2a3328;
+    height: 7vh;
+    line-height: 7vh;
+    text-align: center;
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: bold;
+}
+
+/* Ігрове вікно */
+.game-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Canvas */
+.canvas {
+    width: 160%; /* робимо поле ширше */
+    height: 110%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+}
+
+/* Очки */
+.score {
+    position: absolute;
+    top: 1.5vh;
+    left: 1.5vw;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(14px, 2vw, 20px);
+    user-select: none;
+    z-index: 2;
+}
+
+/* Екран результату */
+.result {
+    width: 80%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Arial, Helvetica, sans-serif;
+    display: none;
+}
+
+.result .content {
+    background-color: white;
+    padding: 2em;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.content h2 {
+    font-size: clamp(28px, 6vw, 50px);
+    font-weight: 700;
+}
+
+.content p {
+    color: #777;
+    font-size: clamp(16px, 3vw, 24px);
+    margin: 1em 0;
+}
+
+.content .btn button,
+.start-game-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 0.8em;
+    border-radius: 30px;
+    background-color: rgb(0, 119, 255);
+    color: white;
+    font-size: clamp(16px, 3vw, 30px);
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.content .btn button:hover,
+.start-game-btn:hover {
+    background-color: rgb(0, 90, 190);
+}
+
+/* Нижня смуга */
+.footer-line {
+    background-color: #2a3328;
+    color: #ffffff;
+    height: 6vh;
+    line-height: 6vh;
+    text-align: center;
+    font-size: clamp(12px, 2vw, 16px);
+}
+
+
+
