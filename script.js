@@ -6,14 +6,6 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
-  // 🔹 Центрирование canvas через CSS
-  canvas.style.display = 'block';
-  canvas.style.margin = '0 auto';
-  canvas.style.position = 'absolute';
-  canvas.style.left = '50%';
-  canvas.style.top = '50%';
-  canvas.style.transform = 'translate(-50%, -50%)';
-
   function resizeCanvas() {
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -49,11 +41,7 @@
   let animationId = null;
   let spawnInterval = null;
 
-  // 🔹 Центр сцены всегда по середине экрана
-  const mid = () => ({
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2
-  });
+  const mid = () => ({ x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 });
 
   class Player {
     constructor(imgs) {
@@ -124,8 +112,8 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 20;
-      this.height = 6;
+      this.width = 20; // 🔹 збільшена ширина кулі
+      this.height = 6; // 🔹 збільшена висота кулі
     }
     draw() {
       ctx.save();
@@ -191,12 +179,7 @@
 
   class Particle {
     constructor(x, y, r, color, vel) {
-      this.x = x;
-      this.y = y;
-      this.radius = r;
-      this.color = color;
-      this.velocity = vel;
-      this.alpha = 1;
+      this.x = x; this.y = y; this.radius = r; this.color = color; this.velocity = vel; this.alpha = 1;
     }
     draw() {
       ctx.save();
@@ -236,8 +219,8 @@
 
   function spawnEnemies() {
     spawnInterval = setInterval(() => {
-      const pos = { x: Math.random() < 0.5 ? -256 : canvas.width + 85, y: Math.random() * canvas.height };
-      const angle = Math.atan2(mid().y - pos.y, mid().x - pos.x);
+      const pos = { x: Math.random() < 0.5 ? -256 : canvas.clientWidth + 85, y: Math.random() * canvas.clientHeight };
+      const angle = Math.atan2(player.position.y - pos.y, player.position.x - pos.x);
       const velocity = { x: Math.cos(angle) * 0.6, y: Math.sin(angle) * 0.6 };
       enemies.push(new Enemy(pos, velocity, angle, preloaded.zombieWalk));
     }, 1000);
@@ -246,10 +229,10 @@
   function animate() {
     animationId = requestAnimationFrame(animate);
 
-    // 🔹 фон
+    // 🔹 Менше горизонтальне розтягування трави
     if (preloaded.grass) {
-      const scaleX = 0.7;
-      const scaleY = 1.2;
+      const scaleX = 0.7; // менше по горизонталі
+      const scaleY = 1.2; // нормальна висота
       const bgWidth = canvas.width * scaleX;
       const bgHeight = canvas.height * scaleY;
       const offsetX = (canvas.width - bgWidth) / 2;
@@ -257,15 +240,15 @@
       ctx.drawImage(preloaded.grass, offsetX, offsetY, bgWidth, bgHeight);
 
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     } else {
       ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
 
     player.update();
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
-    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.width + 50 || b.position.y > canvas.height + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
+    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
     enemies.forEach((enemy, ei) => {
       enemy.update();
       const dx = mid().x - (enemy.position.x + enemy.width / 2);
@@ -292,8 +275,8 @@
 
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+    const cx = rect.left + canvas.clientWidth / 2;
+    const cy = rect.top + canvas.clientHeight / 2;
     const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
     const velocity = { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 };
     const position = { x: cx - rect.left + 40 * Math.cos(angle), y: cy - rect.top + 40 * Math.sin(angle) };
@@ -303,8 +286,8 @@
 
   window.addEventListener('mousemove', (event) => {
     const rect = canvas.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+    const cx = rect.left + canvas.clientWidth / 2;
+    const cy = rect.top + canvas.clientHeight / 2;
     player.rotation = Math.atan2(event.clientY - cy, event.clientX - cx);
   });
 
