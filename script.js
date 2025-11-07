@@ -1,13 +1,14 @@
 (() => {
   const canvas = document.querySelector('.canvas');
   const ctx = canvas.getContext('2d');
+
   const startBtn = document.querySelector('.start-game-btn');
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
   function resizeCanvas() {
-    const w = canvas.clientWidth || window.innerWidth;
-    const h = canvas.clientHeight || window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
@@ -20,7 +21,7 @@
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
+      img.onerror = () => { console.warn('Не знайдено:', src); resolve(null); };
       img.src = src;
     });
   }
@@ -57,6 +58,7 @@
       };
       this.currentSprite = this.sprite.stand;
     }
+
     draw() {
       const m = mid();
       ctx.save();
@@ -83,11 +85,13 @@
       }
       ctx.restore();
     }
+
     update() {
       this.frame++;
       if (this.frame >= this.currentSprite.frames) this.frame = 0;
       this.draw();
     }
+
     shootAnim() {
       this.currentSprite = this.sprite.shoot;
       this.frame = 0;
@@ -141,6 +145,7 @@
       this.frameWidth = 256;
       this.frameHeight = 256;
     }
+
     draw() {
       ctx.save();
       ctx.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
@@ -159,6 +164,7 @@
       );
       ctx.restore();
     }
+
     update() {
       this.frame = (this.frame + 1) % this.framesCount;
       this.position.x += this.velocity.x;
@@ -218,17 +224,9 @@
 
   function animate() {
     animationId = requestAnimationFrame(animate);
+
     if (preloaded.grass) {
-      const scale = 1.5;
-      const bgWidth = canvas.clientWidth * scale;
-      const bgHeight = canvas.clientHeight * scale;
-      ctx.drawImage(
-        preloaded.grass,
-        (canvas.clientWidth - bgWidth) / 2,
-        (canvas.clientHeight - bgHeight) / 2,
-        bgWidth,
-        bgHeight
-      );
+      ctx.drawImage(preloaded.grass, -canvas.width * 0.25, -canvas.height * 0.25, canvas.width * 1.5, canvas.height * 1.5);
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     } else {
@@ -238,21 +236,26 @@
 
     player.update();
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
-    bullets.forEach((b, i) => {
-      b.update();
-      if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1);
-    });
+    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
     enemies.forEach((enemy, ei) => {
       enemy.update();
       const dx = mid().x - (enemy.position.x + enemy.width / 2);
       const dy = mid().y - (enemy.position.y + enemy.height / 2);
       const dist = Math.hypot(dx, dy);
-      if (dist < 40) { cancelAnimationFrame(animationId); clearInterval(spawnInterval); resultScreen.style.display = 'flex'; }
+      if (dist < 40) {
+        cancelAnimationFrame(animationId);
+        clearInterval(spawnInterval);
+        resultScreen.style.display = 'flex';
+      }
       bullets.forEach((bullet, bi) => {
         const d = Math.hypot(bullet.position.x - enemy.position.x, bullet.position.y - enemy.position.y);
         if (d < 30) {
-          for (let i = 0; i < 12; i++) particles.push(new Particle(bullet.position.x, bullet.position.y, Math.random() * 3, 'red', { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }));
-          enemies.splice(ei, 1); bullets.splice(bi, 1); score += 100; scoreDisplay.textContent = score;
+          for (let i = 0; i < 12; i++)
+            particles.push(new Particle(bullet.position.x, bullet.position.y, Math.random() * 3, 'red', { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }));
+          enemies.splice(ei, 1);
+          bullets.splice(bi, 1);
+          score += 100;
+          scoreDisplay.textContent = score;
         }
       });
     });
