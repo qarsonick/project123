@@ -1,7 +1,6 @@
 (() => {
   const canvas = document.querySelector('.canvas');
   const ctx = canvas.getContext('2d');
-
   const startBtn = document.querySelector('.start-game-btn');
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
@@ -21,7 +20,7 @@
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = () => { console.warn('Не знайдено:', src); resolve(null); };
+      img.onerror = () => resolve(null);
       img.src = src;
     });
   }
@@ -43,7 +42,6 @@
 
   const mid = () => ({ x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 });
 
-  // ----- класи -----
   class Player {
     constructor(imgs) {
       const m = mid();
@@ -59,7 +57,6 @@
       };
       this.currentSprite = this.sprite.stand;
     }
-
     draw() {
       const m = mid();
       ctx.save();
@@ -86,13 +83,11 @@
       }
       ctx.restore();
     }
-
     update() {
       this.frame++;
       if (this.frame >= this.currentSprite.frames) this.frame = 0;
       this.draw();
     }
-
     shootAnim() {
       this.currentSprite = this.sprite.shoot;
       this.frame = 0;
@@ -141,13 +136,11 @@
       this.height = 50;
       this.frame = 0;
       this.framesCount = 32;
-      // Специфічні crop значення для видимості зомбі
       this.cropXOffset = 95;
       this.cropYOffset = 100;
       this.frameWidth = 256;
       this.frameHeight = 256;
     }
-
     draw() {
       ctx.save();
       ctx.translate(this.position.x + this.width / 2, this.position.y + this.height / 2);
@@ -166,7 +159,6 @@
       );
       ctx.restore();
     }
-
     update() {
       this.frame = (this.frame + 1) % this.framesCount;
       this.position.x += this.velocity.x;
@@ -227,15 +219,29 @@
   function animate() {
     animationId = requestAnimationFrame(animate);
     if (preloaded.grass) {
-      ctx.drawImage(preloaded.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
+      const scale = 1.5;
+      const bgWidth = canvas.clientWidth * scale;
+      const bgHeight = canvas.clientHeight * scale;
+      ctx.drawImage(
+        preloaded.grass,
+        (canvas.clientWidth - bgWidth) / 2,
+        (canvas.clientHeight - bgHeight) / 2,
+        bgWidth,
+        bgHeight
+      );
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-    } else ctx.fillStyle = 'black', ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    } else {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    }
 
     player.update();
-
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
-    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
+    bullets.forEach((b, i) => {
+      b.update();
+      if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1);
+    });
     enemies.forEach((enemy, ei) => {
       enemy.update();
       const dx = mid().x - (enemy.position.x + enemy.width / 2);
