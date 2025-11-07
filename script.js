@@ -6,12 +6,19 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
-  function resizeCanvas() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+function resizeCanvas() {
+ 
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
+
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+    }
+   
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   window.addEventListener('resize', resizeCanvas);
@@ -298,4 +305,5 @@
 
   setup();
 })();
+
 
