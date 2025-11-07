@@ -6,19 +6,12 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
-function resizeCanvas() {
- 
-    const rect = canvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-
+  function resizeCanvas() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
-
-    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-    }
-   
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   window.addEventListener('resize', resizeCanvas);
@@ -119,19 +112,15 @@ function resizeCanvas() {
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 20; 
-      this.height = 6; 
+      this.width = 20;
+      this.height = 6;
     }
     draw() {
       ctx.save();
       ctx.translate(this.position.x, this.position.y);
       ctx.rotate(this.rotation);
-      if (this.image)
-        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
-      else {
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-      }
+      if (this.image) ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+      else { ctx.fillStyle = 'yellow'; ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height); }
       ctx.restore();
     }
     update() {
@@ -235,23 +224,14 @@ function resizeCanvas() {
 
   function animate() {
     animationId = requestAnimationFrame(animate);
-    
     if (preloaded.grass) {
-      const scaleX = 0.7;
-      const scaleY = 1.2; 
-      const bgWidth = canvas.width * scaleX;
-      const bgHeight = canvas.height * scaleY;
-      const offsetX = (canvas.width - bgWidth) / 2;
-      const offsetY = (canvas.height - bgHeight) / 2;
-      ctx.drawImage(preloaded.grass, offsetX, offsetY, bgWidth, bgHeight);
-
+      ctx.drawImage(preloaded.grass, -canvas.width * 0.25, -canvas.height * 0.25, canvas.width * 1.5, canvas.height * 1.5);
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     } else {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
-
     player.update();
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
     bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
@@ -305,5 +285,3 @@ function resizeCanvas() {
 
   setup();
 })();
-
-
