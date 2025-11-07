@@ -1,4 +1,4 @@
-/* Скидання стилів */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -20,11 +20,10 @@ body {
     background: url('photos/grass.jpg') center/150% no-repeat; 
 }
 
-/* Основний контейнер — трохи менше ніж 16:9 */
 .desktop-container {
     width: 88vw;
     max-width: 1300px;
-    aspect-ratio: 14 / 9; /* трохи нижче за 16:9 */
+    aspect-ratio: 14 / 9; 
     background-color: #43513b;
     display: flex;
     flex-direction: column;
@@ -34,7 +33,7 @@ body {
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-/* Верхня смуга */
+
 .header-line {
     background-color: #ffffff;
     color: #2a3328;
@@ -45,7 +44,7 @@ body {
     font-weight: bold;
 }
 
-/* Ігрове вікно */
+
 .game-wrapper {
     flex: 1;
     position: relative;
@@ -55,9 +54,9 @@ body {
     align-items: center;
 }
 
-/* Canvas */
+
 .canvas {
-    width: 160%; /* робимо поле ширше */
+    width: 160%; 
     height: 110%;
     position: absolute;
     top: 0;
@@ -65,7 +64,7 @@ body {
     display: none;
 }
 
-/* Очки */
+
 .score {
     position: absolute;
     top: 1.5vh;
@@ -77,7 +76,7 @@ body {
     z-index: 2;
 }
 
-/* Екран результату */
+
 .result {
     width: 80%;
     position: absolute;
@@ -129,7 +128,7 @@ body {
     background-color: rgb(0, 90, 190);
 }
 
-/* Нижня смуга */
+
 .footer-line {
     background-color: #2a3328;
     color: #ffffff;
@@ -138,6 +137,7 @@ body {
     text-align: center;
     font-size: clamp(12px, 2vw, 16px);
 }
+
 
 
 
