@@ -314,3 +314,7 @@ body {
   margin-bottom: -5px;
   text-align: center;
 }
+
+body {
+  display: block;
+}
