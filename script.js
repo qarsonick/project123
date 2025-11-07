@@ -224,6 +224,7 @@
 
   function animate() {
     animationId = requestAnimationFrame(animate);
+
     if (preloaded.grass) {
       ctx.drawImage(preloaded.grass, -canvas.width * 0.25, -canvas.height * 0.25, canvas.width * 1.5, canvas.height * 1.5);
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -232,6 +233,7 @@
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
+
     player.update();
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
     bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
@@ -284,4 +286,8 @@
   }
 
   setup();
-})();
+})();  
+
+
+
+можешь в этом коде изменить только размер пули
