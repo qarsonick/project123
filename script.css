@@ -17,7 +17,7 @@ body {
     justify-content: center;
     align-items: center;
     font-family: Arial, sans-serif;
-    background: url('photos/grass.jpg') center/cover no-repeat;
+    background: url('photos/grass.jpg') center/150% no-repeat; 
 }
 
 /* Основний контейнер — трохи менше ніж 16:9 */
@@ -138,5 +138,6 @@ body {
     text-align: center;
     font-size: clamp(12px, 2vw, 16px);
 }
+
 
 
