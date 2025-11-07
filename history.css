@@ -63,12 +63,12 @@ textarea {
 /*General Accordion****************************************************************************/
 /*Set style of open slide*/
 .accordion section:target {
-  background: #FFF;
+  background: #88af71;
   padding: 10px;
 }
 
 .accordion section:target:hover {
-  background: #FFF;
+  background: #88af71;
 }
 
 .accordion section:target h2 {
