@@ -6,9 +6,17 @@
   const resultScreen = document.querySelector('.result');
   const scoreDisplay = document.querySelector('.score');
 
+  // 🔹 Центрирование canvas через CSS
+  canvas.style.display = 'block';
+  canvas.style.margin = '0 auto';
+  canvas.style.position = 'absolute';
+  canvas.style.left = '50%';
+  canvas.style.top = '50%';
+  canvas.style.transform = 'translate(-50%, -50%)';
+
   function resizeCanvas() {
-    const w = canvas.clientWidth || window.innerWidth;
-    const h = canvas.clientHeight || window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = w * dpr;
     canvas.height = h * dpr;
@@ -41,9 +49,12 @@
   let animationId = null;
   let spawnInterval = null;
 
-  const mid = () => ({ x: canvas.clientWidth / 2, y: canvas.clientHeight / 2 });
+  // 🔹 Центр сцены всегда по середине экрана
+  const mid = () => ({
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2
+  });
 
-  // ----- класи -----
   class Player {
     constructor(imgs) {
       const m = mid();
@@ -113,15 +124,19 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 12;
-      this.height = 3;
+      this.width = 20;
+      this.height = 6;
     }
     draw() {
       ctx.save();
       ctx.translate(this.position.x, this.position.y);
       ctx.rotate(this.rotation);
-      if (this.image) ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
-      else { ctx.fillStyle = 'yellow'; ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height); }
+      if (this.image)
+        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+      else {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+      }
       ctx.restore();
     }
     update() {
@@ -141,7 +156,6 @@
       this.height = 50;
       this.frame = 0;
       this.framesCount = 32;
-      // Специфічні crop значення для видимості зомбі
       this.cropXOffset = 95;
       this.cropYOffset = 100;
       this.frameWidth = 256;
@@ -177,7 +191,12 @@
 
   class Particle {
     constructor(x, y, r, color, vel) {
-      this.x = x; this.y = y; this.radius = r; this.color = color; this.velocity = vel; this.alpha = 1;
+      this.x = x;
+      this.y = y;
+      this.radius = r;
+      this.color = color;
+      this.velocity = vel;
+      this.alpha = 1;
     }
     draw() {
       ctx.save();
@@ -217,8 +236,8 @@
 
   function spawnEnemies() {
     spawnInterval = setInterval(() => {
-      const pos = { x: Math.random() < 0.5 ? -256 : canvas.clientWidth + 85, y: Math.random() * canvas.clientHeight };
-      const angle = Math.atan2(player.position.y - pos.y, player.position.x - pos.x);
+      const pos = { x: Math.random() < 0.5 ? -256 : canvas.width + 85, y: Math.random() * canvas.height };
+      const angle = Math.atan2(mid().y - pos.y, mid().x - pos.x);
       const velocity = { x: Math.cos(angle) * 0.6, y: Math.sin(angle) * 0.6 };
       enemies.push(new Enemy(pos, velocity, angle, preloaded.zombieWalk));
     }, 1000);
@@ -226,27 +245,46 @@
 
   function animate() {
     animationId = requestAnimationFrame(animate);
+
+    // 🔹 фон
     if (preloaded.grass) {
-      ctx.drawImage(preloaded.grass, 0, 0, canvas.clientWidth, canvas.clientHeight);
+      const scaleX = 0.7;
+      const scaleY = 1.2;
+      const bgWidth = canvas.width * scaleX;
+      const bgHeight = canvas.height * scaleY;
+      const offsetX = (canvas.width - bgWidth) / 2;
+      const offsetY = (canvas.height - bgHeight) / 2;
+      ctx.drawImage(preloaded.grass, offsetX, offsetY, bgWidth, bgHeight);
+
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
-      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-    } else ctx.fillStyle = 'black', ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     player.update();
-
     particles.forEach((p, i) => { if (p.alpha <= 0) particles.splice(i, 1); else p.update(); });
-    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.clientWidth + 50 || b.position.y > canvas.clientHeight + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
+    bullets.forEach((b, i) => { b.update(); if (b.position.x > canvas.width + 50 || b.position.y > canvas.height + 50 || b.position.x < -50 || b.position.y < -50) bullets.splice(i, 1); });
     enemies.forEach((enemy, ei) => {
       enemy.update();
       const dx = mid().x - (enemy.position.x + enemy.width / 2);
       const dy = mid().y - (enemy.position.y + enemy.height / 2);
       const dist = Math.hypot(dx, dy);
-      if (dist < 40) { cancelAnimationFrame(animationId); clearInterval(spawnInterval); resultScreen.style.display = 'flex'; }
+      if (dist < 40) {
+        cancelAnimationFrame(animationId);
+        clearInterval(spawnInterval);
+        resultScreen.style.display = 'flex';
+      }
       bullets.forEach((bullet, bi) => {
         const d = Math.hypot(bullet.position.x - enemy.position.x, bullet.position.y - enemy.position.y);
         if (d < 30) {
-          for (let i = 0; i < 12; i++) particles.push(new Particle(bullet.position.x, bullet.position.y, Math.random() * 3, 'red', { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }));
-          enemies.splice(ei, 1); bullets.splice(bi, 1); score += 100; scoreDisplay.textContent = score;
+          for (let i = 0; i < 12; i++)
+            particles.push(new Particle(bullet.position.x, bullet.position.y, Math.random() * 3, 'red', { x: (Math.random() - 0.5) * 2, y: (Math.random() - 0.5) * 2 }));
+          enemies.splice(ei, 1);
+          bullets.splice(bi, 1);
+          score += 100;
+          scoreDisplay.textContent = score;
         }
       });
     });
@@ -254,8 +292,8 @@
 
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const cx = rect.left + canvas.clientWidth / 2;
-    const cy = rect.top + canvas.clientHeight / 2;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
     const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
     const velocity = { x: Math.cos(angle) * 6, y: Math.sin(angle) * 6 };
     const position = { x: cx - rect.left + 40 * Math.cos(angle), y: cy - rect.top + 40 * Math.sin(angle) };
@@ -265,8 +303,8 @@
 
   window.addEventListener('mousemove', (event) => {
     const rect = canvas.getBoundingClientRect();
-    const cx = rect.left + canvas.clientWidth / 2;
-    const cy = rect.top + canvas.clientHeight / 2;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
     player.rotation = Math.atan2(event.clientY - cy, event.clientX - cx);
   });
 

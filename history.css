@@ -55,12 +55,13 @@ body {
 
 /* Open slide */
 .accordion section:target {
-  background: #fff;
-  padding: 2vw;
+  background: #88af71;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .accordion section:target:hover {
-  background: #fff;
+  background: #88af71;
 }
 
 .accordion section:target h2 {
