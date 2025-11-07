@@ -6,6 +6,7 @@ body {
     padding: 0;
     display: flex;
     justify-content: center;
+    background: url('photos/grass.jpg') center/150% no-repeat; 
 }
 
 
