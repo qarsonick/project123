@@ -13,7 +13,7 @@ html, body {
 
 /* Фон */
 body {
-    background: url('photos/grass.jpg') center/cover no-repeat;
+    background: url('photos/grass.jpg') center/150% no-repeat; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -138,3 +138,4 @@ body {
     text-align: center;
     font-size: clamp(12px, 2vw, 16px);
 }
+
