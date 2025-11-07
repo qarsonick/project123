@@ -112,15 +112,19 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 12;
-      this.height = 3;
+      this.width = 20; // 🔹 збільшена ширина кулі
+      this.height = 6; // 🔹 збільшена висота кулі
     }
     draw() {
       ctx.save();
       ctx.translate(this.position.x, this.position.y);
       ctx.rotate(this.rotation);
-      if (this.image) ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
-      else { ctx.fillStyle = 'yellow'; ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height); }
+      if (this.image)
+        ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+      else {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+      }
       ctx.restore();
     }
     update() {
@@ -225,8 +229,16 @@
   function animate() {
     animationId = requestAnimationFrame(animate);
 
+    // 🔹 Менше горизонтальне розтягування трави
     if (preloaded.grass) {
-      ctx.drawImage(preloaded.grass, -canvas.width * 0.25, -canvas.height * 0.25, canvas.width * 1.5, canvas.height * 1.5);
+      const scaleX = 0.7; // менше по горизонталі
+      const scaleY = 1.2; // нормальна висота
+      const bgWidth = canvas.width * scaleX;
+      const bgHeight = canvas.height * scaleY;
+      const offsetX = (canvas.width - bgWidth) / 2;
+      const offsetY = (canvas.height - bgHeight) / 2;
+      ctx.drawImage(preloaded.grass, offsetX, offsetY, bgWidth, bgHeight);
+
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     } else {
