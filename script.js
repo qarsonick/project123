@@ -112,8 +112,8 @@
       this.position = { ...pos };
       this.velocity = { ...vel };
       this.rotation = rot;
-      this.width = 20; // 🔹 збільшена ширина кулі
-      this.height = 6; // 🔹 збільшена висота кулі
+      this.width = 20; 
+      this.height = 6; 
     }
     draw() {
       ctx.save();
@@ -228,11 +228,10 @@
 
   function animate() {
     animationId = requestAnimationFrame(animate);
-
-    // 🔹 Менше горизонтальне розтягування трави
+    
     if (preloaded.grass) {
-      const scaleX = 0.7; // менше по горизонталі
-      const scaleY = 1.2; // нормальна висота
+      const scaleX = 0.7;
+      const scaleY = 1.2; 
       const bgWidth = canvas.width * scaleX;
       const bgHeight = canvas.height * scaleY;
       const offsetX = (canvas.width - bgWidth) / 2;
@@ -299,3 +298,4 @@
 
   setup();
 })();
+
