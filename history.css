@@ -57,6 +57,7 @@ body {
 .accordion section:target {
   background: #88af71;
   padding: 10px;
+  box-sizing: border-box;
 }
 
 .accordion section:target:hover {
